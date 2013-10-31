@@ -179,6 +179,11 @@ namespace ChaoticLib{ namespace Win32{
 	WINDOW(_, 48, _)
 	WINDOW(_, 49, _)
 
+#undef PROC_MAX
+#undef DECLARE
+#undef CALL_PROC
+#undef WINDOW
+
 	template <class Derived>
 	class Resizable
 	{
