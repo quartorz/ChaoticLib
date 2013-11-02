@@ -22,10 +22,12 @@ namespace ChaoticLib{
 			std::for_each(resources.begin(), resources.end(), std::mem_fn(&Traits::Resource::DestroyResource));
 		}
 
+#ifdef _MSC_VER
 		bool WindowProc(HWND, UINT, WPARAM, LPARAM, LRESULT &)
 		{
 			return true;
 		}
+#endif
 
 		bool CreateResource(const typename Traits::Resource::CreateStruct &cs)
 		{
