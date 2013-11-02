@@ -29,7 +29,15 @@ namespace ChaoticLib{ namespace Direct2D{
 			return cd;
 		}
 		void DrawLine(const PaintStruct &ps, const Brush &brush, const Point &start, const Point &end);
+		void DrawLine(const PaintStruct &ps, const Brush *brush, const Point &start, const Point &end)
+		{
+			DrawLine(ps, *brush, start, end);
+		}
 		void DrawRect(const PaintStruct &ps, const Brush &brush, const Rect &rect);
+		void DrawRect(const PaintStruct &ps, const Brush *brush, const Rect &rect)
+		{
+			DrawRect(ps, *brush, rect);
+		}
 		void Clear(const PaintStruct &ps, const Color &c);
 
 		typedef PaintStruct PaintStruct;
