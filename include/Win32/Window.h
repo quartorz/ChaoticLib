@@ -6,6 +6,7 @@
 #include <boost\preprocessor\facilities\intercept.hpp>
 #include <boost\preprocessor\enum_params.hpp>
 #include <boost\preprocessor\repeat_from_to.hpp>
+#include <boost\preprocessor\comparison\equal.hpp>
 #include <boost\preprocessor\comparison\not_equal.hpp>
 #include <boost\preprocessor\repetition\enum_binary_params.hpp>
 #include <boost\preprocessor\arithmetic\dec.hpp>
@@ -111,6 +112,15 @@ namespace ChaoticLib{ namespace Win32{
 			LRESULT lresult = 0l; \
 			BOOST_PP_REPEAT(n, CALL_PROC,) \
 			 \
+			switch(msg){ \
+			case WM_CREATE: \
+				static_cast<Derived*>(this)->Initialize(); \
+				break; \
+			case WM_DESTROY: \
+				static_cast<Derived*>(this)->Uninitialize(); \
+				break; \
+			} \
+			 \
 			return ::DefWindowProcW(hwnd, msg, wParam, lParam); \
 		} \
 	};
@@ -120,15 +130,23 @@ namespace ChaoticLib{ namespace Win32{
 		return lresult;
 
 	template <class Derived, BOOST_PP_ENUM_BINARY_PARAMS(PROC_MAX, class Proc, = ChaoticLib::Nil BOOST_PP_INTERCEPT)>
-	class Window
-		DECLARE(0)
+	class Window:
+		BOOST_PP_ENUM_PARAMS(PROC_MAX, public Proc)
+		DECLARE(PROC_MAX)
 
 #define WINDOW(z, n, d) \
-	template <class Derived, BOOST_PP_ENUM_PARAMS(n, class Proc)> \
-	class Window<Derived, BOOST_PP_ENUM_PARAMS(n, Proc) BOOST_PP_COMMA_IF(BOOST_PP_NOT_EQUAL(n, PROC_MAX)) BOOST_PP_ENUM_PARAMS(BOOST_PP_SUB(PROC_MAX, n), ChaoticLib::Nil BOOST_PP_INTERCEPT)>: \
+	template <class Derived BOOST_PP_COMMA_IF(BOOST_PP_NOT_EQUAL(n, 0)) BOOST_PP_ENUM_PARAMS(n, class Proc)> \
+	class Window< \
+		Derived, \
+		BOOST_PP_ENUM_PARAMS(n, Proc) \
+		BOOST_PP_COMMA_IF(BOOST_PP_NOT_EQUAL(n, 0)) \
+		BOOST_PP_ENUM_PARAMS(BOOST_PP_SUB(PROC_MAX, n), ChaoticLib::Nil BOOST_PP_INTERCEPT) \
+	>BOOST_PP_IF(BOOST_PP_NOT_EQUAL(n, 0), :,) \
 		BOOST_PP_ENUM_PARAMS(n, public Proc) \
 		DECLARE(n)
 
+	// BOOST_PP_REPEATÇégÇ§Ç∆åãâ Ç™í∑Ç≠Ç»ÇËÇ∑Ç¨Çƒè„éËÇ≠Ç¢Ç©Ç»Ç¢
+	WINDOW(_, 0, _)
 	WINDOW(_, 1, _)
 	WINDOW(_, 2, _)
 	WINDOW(_, 3, _)
