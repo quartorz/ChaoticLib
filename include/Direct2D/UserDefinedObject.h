@@ -199,6 +199,8 @@ namespace ChaoticLib{ namespace Direct2D{
 			if(CheckDuplicate && std::find(objects.begin(), objects.end(), o) != objects.end())
 				return;
 
+			if(created)
+				o->CreateResource(window->CreateStruct());
 			objects.push_back(o);
 		}
 

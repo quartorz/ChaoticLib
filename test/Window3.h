@@ -39,6 +39,11 @@ public:
 		static int scene = 0;
 		if(keycode == L' ')
 			GetWindow()->SelectScene(scene = !scene);
+		else if(keycode == L'A'){
+			auto o = new ::UserDefinedObject<Window>(GetWindow());
+			RegisterObject(o);
+			o->SetSize(Direct2D::Size(100, 200));
+		}
 	}
 };
 
