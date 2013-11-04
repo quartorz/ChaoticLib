@@ -26,6 +26,8 @@ namespace ChaoticLib{
 
 		void SelectScene(int s)
 		{
+			scenes[selected]->Hide();
+			scenes[s]->Show();
 			selected = s;
 		}
 
