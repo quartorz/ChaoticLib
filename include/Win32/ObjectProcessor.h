@@ -9,7 +9,7 @@ namespace ChaoticLib{ namespace Win32{
 	class ObjectProcessor{
 		HCURSOR hCursor[3];
 		typename Traits::Object *focus, *hover;
-		bool inside;
+		bool inside, pushing;
 
 	protected:
 		enum CursorType{
@@ -21,7 +21,7 @@ namespace ChaoticLib{ namespace Win32{
 		void SetCursorType(CursorType);
 
 	public:
-		ObjectProcessor(): cursor_type(Arrow), focus(nullptr), hover(nullptr), inside(false)
+		ObjectProcessor(): cursor_type(Arrow), focus(nullptr), hover(nullptr), inside(false), pushing(false)
 		{
 			hCursor[0] = static_cast<HCURSOR>(::LoadImageW(
 				nullptr,
@@ -78,13 +78,14 @@ namespace ChaoticLib{ namespace Win32{
 				auto hts = Object::CreateHitTestStruct(static_cast<Derived*>(this));
 				int x = GET_X_LPARAM(lParam);
 				int y = GET_Y_LPARAM(lParam);
-				if(hover != nullptr && !hover->IsColliding(Point(x, y))){
-					hover->OnMouseLeave(hts);
-					hover = nullptr;
-				}
-				if(focus != nullptr){
+				
+				if(pushing && focus != nullptr){
 					focus->OnMouseMove(Point(x, y), hts);
 				}else{
+					if(hover != nullptr && !hover->IsColliding(Point(x, y))){
+						hover->OnMouseLeave(hts);
+						hover = nullptr;
+					}
 					static_cast<Derived*>(this)->IterateObjects([&](typename Object &o)-> bool{
 						if(o.IsColliding(Point(x, y))){
 							o.OnMouseMove(Point(x, y), hts);
@@ -122,6 +123,9 @@ namespace ChaoticLib{ namespace Win32{
 				int x = GET_X_LPARAM(lParam);
 				int y = GET_Y_LPARAM(lParam);
 				bool collide = false;
+
+				pushing = true;
+
 				static_cast<Derived*>(this)->IterateObjects([&](typename Object &o)-> bool{
 					if(o.IsColliding(Point(x, y))){
 						o.OnLeftPress(Point(x, y), hts);
@@ -148,9 +152,11 @@ namespace ChaoticLib{ namespace Win32{
 				auto hts = Object::CreateHitTestStruct(static_cast<Derived*>(this));
 				int x = GET_X_LPARAM(lParam);
 				int y = GET_Y_LPARAM(lParam);
+
+				pushing = false;
+
 				if(focus != nullptr){
 					focus->OnLeftRelease(Point(x, y), hts);
-					focus = nullptr;
 				}
 				
 				SetCursorType(static_cast<CursorType>(hts.cursor));
