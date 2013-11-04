@@ -120,6 +120,7 @@ public:
 			if(!super::IsColliding(ap))
 				hts.SetCursor(Object::HitTestStruct::Cursor::Hand);
 		}else {
+			hts.SetCursor(Object::HitTestStruct::Cursor::Hand);
 			this->SetPosition(origin + ap - push_pos);
 		}
 	}
