@@ -46,7 +46,7 @@ class Window:
 	public Win32::Window<
 		Window,
 		Win32::QuitOnClose<Window>,
-		Win32::Resizable<Window>,		// –³‚¢‚ÆSceneManager::OnSize‚ªŒÄ‚Î‚ê‚È‚¢¨‰½‚à•\¦‚³‚ê‚È‚¢
+		Win32::Resizable<Window>, // –³‚¢‚ÆSceneManager::OnSize‚ªŒÄ‚Î‚ê‚È‚¢¨‰½‚à•\¦‚³‚ê‚È‚¢
 		Win32::Keyboard<Window>,
 		Win32::ObjectProcessor<Window, Direct2D::Traits>,
 		Win32::Timer<Window, 100>,
