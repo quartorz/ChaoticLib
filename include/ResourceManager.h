@@ -6,7 +6,7 @@
 
 namespace ChaoticLib{
 
-	template <class Derived, class Traits, bool CheckDuplicate=false, bool MultiThread=false>
+	template <class Derived, class Traits, bool CheckDuplicate=false, bool MultiThread=false /* –¢ŽÀ‘• */>
 	class ResourceManager{
 		std::unordered_set<typename Traits::Resource*> resources;
 		bool create;
@@ -21,13 +21,6 @@ namespace ChaoticLib{
 		{
 			std::for_each(resources.begin(), resources.end(), std::mem_fn(&Traits::Resource::DestroyResource));
 		}
-
-#ifdef _MSC_VER
-		bool WindowProc(HWND, UINT, WPARAM, LPARAM, LRESULT &)
-		{
-			return true;
-		}
-#endif
 
 		bool CreateResource(const typename Traits::Resource::CreateStruct &cs)
 		{
@@ -69,6 +62,7 @@ namespace ChaoticLib{
 			if(it != resources.end()){
 				r->DestroyResource();
 				resources.erase(it);
+				return;
 			}
 
 			// throw std::runtime_error("non-registered resource");
@@ -86,11 +80,20 @@ namespace ChaoticLib{
 
 		typename Traits::SolidBrush *CreateSolidBrush(const typename Traits::Color &c)
 		{
-			auto br = new typename Traits::SolidBrush(c);
+			auto br = new Traits::SolidBrush(c);
 
 			RegisterResource(br);
 
 			return br;
+		}
+
+		typename Traits::Font *CreateFont()
+		{
+			auto font = new Traits::Font();
+
+			RegisterResource(font);
+
+			return font;
 		}
 	};
 

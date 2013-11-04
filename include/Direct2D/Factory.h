@@ -3,6 +3,7 @@
 #include <d2d1.h>
 #include <dwrite.h>
 #include <wincodec.h>
+#include <comdef.h>
 
 namespace{
 	struct D2D{
@@ -31,9 +32,10 @@ namespace ChaoticLib{ namespace Direct2D{
 		}
 		Factory(Init&)
 		{
-			::D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &factory);
-			::DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(dwfactory), reinterpret_cast<IUnknown**>(&dwfactory));
-			::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&wicfactory));
+			using namespace _com_util;
+			CheckError(::D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &factory));
+			CheckError(::DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(dwfactory), reinterpret_cast<IUnknown**>(&dwfactory)));
+			CheckError(::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&wicfactory)));
 		}
 		Factory(const Factory &f)
 		{

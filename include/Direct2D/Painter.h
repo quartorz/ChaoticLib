@@ -1,10 +1,14 @@
 #pragma once
 
 #include <d2d1.h>
+#include <cstring>
 
 #include "Factory.h"
 #include "BaseTypes.h"
 #include "Brush.h"
+#include "Font.h"
+
+#undef DrawText
 
 namespace ChaoticLib{ namespace Direct2D{
 
@@ -37,6 +41,19 @@ namespace ChaoticLib{ namespace Direct2D{
 		void DrawRect(const PaintStruct &ps, const Brush *brush, const Rect &rect)
 		{
 			DrawRect(ps, *brush, rect);
+		}
+		void DrawText(const PaintStruct &ps, const Font &font, const Brush &brush, const wchar_t *text, const Rect &rect, bool clip=false);
+		void DrawText(const PaintStruct &ps, const Font *font, const Brush &brush, const wchar_t *text, const Rect &rect, bool clip=false)
+		{
+			DrawText(ps, *font, brush, text, rect, clip);
+		}
+		void DrawText(const PaintStruct &ps, const Font &font, const Brush *brush, const wchar_t *text, const Rect &rect, bool clip=false)
+		{
+			DrawText(ps, font, *brush, text, rect, clip);
+		}
+		void DrawText(const PaintStruct &ps, const Font *font, const Brush *brush, const wchar_t *text, const Rect &rect, bool clip=false)
+		{
+			DrawText(ps, *font, *brush, text, rect, clip);
 		}
 		void Clear(const PaintStruct &ps, const Color &c);
 
@@ -100,6 +117,18 @@ namespace ChaoticLib{ namespace Direct2D{
 		ps.target->FillRectangle(
 			rect,
 			brush.Get());
+	}
+
+	template <class Derived>
+	inline void Painter<Derived>::DrawText(const PaintStruct &ps, const Font &font, const Brush &brush, const wchar_t *text, const Rect &rect, bool clip)
+	{
+		ps.target->DrawTextW(
+			text,
+			std::wcslen(text),
+			font.Get(),
+			rect,
+			brush.Get(),
+			(clip ? D2D1_DRAW_TEXT_OPTIONS_CLIP: D2D1_DRAW_TEXT_OPTIONS_NONE));
 	}
 
 	template <class Derived>

@@ -10,6 +10,8 @@
 
 namespace ChaoticLib{ namespace Direct2D{
 
+	class Brush;
+
 	struct PaintStruct{
 		ID2D1RenderTarget *target;
 		bool debug;
@@ -91,6 +93,17 @@ namespace ChaoticLib{ namespace Direct2D{
 		bool CollideWith(const Rect &r)
 		{
 			return left < r.right && right > r.left && top < r.bottom && bottom > r.top;
+		}
+		void Draw(const PaintStruct &ps, const Brush &brush, float width=1.f);
+		void Fill(const PaintStruct &ps, const Brush &brush);
+	};
+
+	struct Line{
+		Point p1, p2;
+
+	public:
+		Line(const Point &p1=Point(), const Point &p2=Point()): p1(p1), p2(p2)
+		{
 		}
 	};
 

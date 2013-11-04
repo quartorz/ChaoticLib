@@ -7,7 +7,7 @@ namespace ChaoticLib{ namespace Direct2D{
 	class SolidBrush: public Brush{
 		Color color;
 	public:
-		SolidBrush(const Color &c)
+		SolidBrush(const Color &c=Color())
 			:color(c)
 		{
 		}
@@ -18,8 +18,8 @@ namespace ChaoticLib{ namespace Direct2D{
 
 		void SetColor(const Color &);
 
-		virtual bool CreateResource(const CreateStruct &);
-		virtual void DestroyResource();
+		virtual bool CreateResource(const CreateStruct &) override;
+		virtual void DestroyResource() override;
 
 		const Color &GetColor() const
 		{

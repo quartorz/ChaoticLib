@@ -3,8 +3,6 @@
 #include <d2d1.h>
 #include "BaseTypes.h"
 
-#include <stdexcept>
-
 namespace ChaoticLib{ namespace Direct2D{
 	class Resource{
 	public:
@@ -18,9 +16,5 @@ namespace ChaoticLib{ namespace Direct2D{
 
 		virtual bool CreateResource(const CreateStruct &) = 0;
 		virtual void DestroyResource() = 0;
-		virtual void Draw(const PaintStruct &)
-		{
-			throw std::runtime_error("resource is not drawable");
-		}
 	};
 } }

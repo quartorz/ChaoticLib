@@ -114,7 +114,8 @@ namespace ChaoticLib{ namespace Win32{
 			 \
 			switch(msg){ \
 			case WM_CREATE: \
-				static_cast<Derived*>(this)->Initialize(); \
+				if(!static_cast<Derived*>(this)->Initialize()) \
+					return -1l; \
 				break; \
 			case WM_DESTROY: \
 				static_cast<Derived*>(this)->Uninitialize(); \
