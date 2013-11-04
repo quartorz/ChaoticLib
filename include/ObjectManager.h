@@ -9,10 +9,10 @@ namespace ChaoticLib{
 	template <class Derived, class Traits, bool CheckDuplicate=false, bool MultiThread=false /* –¢ŽÀ‘• */>
 	class ObjectManager{
 		std::deque<typename Traits::Object*> objects;
-		bool create;
+		bool created;
 
 	public:
-		ObjectManager(): create(false)
+		ObjectManager(): created(false)
 		{
 		}
 		~ObjectManager()
@@ -20,9 +20,9 @@ namespace ChaoticLib{
 			std::for_each(objects.begin(), objects.end(), std::mem_fn(&Traits::Object::DestroyResource));
 		}
 
-		bool CreateResource(const typename Traits::Resource::CreateStruct &cs)
+		bool CreateResource(const typename Traits::CreateStruct &cs)
 		{
-			create = true;
+			created = true;
 			return std::all_of(
 				objects.begin(), objects.end(),
 				std::bind(
@@ -33,7 +33,7 @@ namespace ChaoticLib{
 
 		void DestroyResource()
 		{
-			create = false;
+			created = false;
 			std::for_each(objects.begin(), objects.end(), std::mem_fn(&Traits::Object::DestroyResource));
 		}
 
@@ -60,7 +60,7 @@ namespace ChaoticLib{
 			if(CheckDuplicate && std::find(objects.begin(), objects.end(), o) != objects.end())
 				return;
 
-			if(create)
+			if(created)
 				o->CreateResource(static_cast<Derived*>(this)->CreateStruct());
 			objects.push_back(o);
 		}

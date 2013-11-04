@@ -6,10 +6,6 @@
 namespace ChaoticLib{ namespace Direct2D{
 	class Resource{
 	public:
-		struct CreateStruct{
-			ID2D1RenderTarget *target;
-		};
-
 		virtual ~Resource()
 		{
 		}

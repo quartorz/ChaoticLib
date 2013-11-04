@@ -44,7 +44,7 @@ namespace ChaoticLib{
 
 		virtual void OnLeftPress(const typename Traits::Point &ap, typename Traits::Object::HitTestStruct &hts) override
 		{
-			hts.cursor = HitTestStruct::Hand;
+			hts.SetCursor(HitTestStruct::Cursor::Hand);
 			pushing = true;
 			SetState(State::Push);
 		}
@@ -52,7 +52,7 @@ namespace ChaoticLib{
 		virtual void OnMouseMove(const typename Traits::Point &ap, typename Traits::Object::HitTestStruct &hts) override
 		{
 			if(pushing){
-				hts.cursor = HitTestStruct::Hand;
+				hts.SetCursor(HitTestStruct::Cursor::Hand);
 				if(IsColliding(ap)){
 					// 押されててカーソルが中にある
 					SetState(State::Push);
@@ -64,7 +64,7 @@ namespace ChaoticLib{
 				if(IsColliding(ap)){
 					// 押してないけどカーソルが乗ってる=ホバーしてる
 					SetState(State::Hover);
-					hts.cursor = HitTestStruct::Hand;
+					hts.SetCursor(HitTestStruct::Cursor::Hand);
 				}else
 					SetState(State::None);
 			}

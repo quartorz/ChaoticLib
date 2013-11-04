@@ -119,7 +119,11 @@ namespace ChaoticLib{ namespace Direct2D{
 		void SetItalic(int start, int end, bool set=true);
 		void SetStrikeThrough(int start, int end, bool set=true);
 
-		const Font &GetFont() const;
+		Font &GetFont();
+		const Font &GetFont() const
+		{
+			return const_cast<Text*>(this)->GetFont();
+		}
 		const wchar_t *GetText() const;
 		Align GetAlign() const;
 		ParagraphAlign GetParagraphAlign() const;

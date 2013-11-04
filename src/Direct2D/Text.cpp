@@ -194,7 +194,7 @@ void Text::SetStrikeThrough(int start, int end, bool set /* =true */)
 		strikethroughs.push_back(std::make_pair(CreateRange(start, end), set));
 }
 
-const ChaoticLib::Direct2D::Font &Text::GetFont() const
+ChaoticLib::Direct2D::Font &Text::GetFont()
 {
 	return font;
 }

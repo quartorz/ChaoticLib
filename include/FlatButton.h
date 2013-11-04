@@ -14,6 +14,12 @@ namespace ChaoticLib{
 		typename Traits::Text text;
 		typename Traits::Color color[3];
 
+		virtual void SetState(State s) override
+		{
+			Button::SetState(s);
+			text.SetColor(color[s]);
+		}
+
 	public:
 		FlatButton()
 		{
@@ -29,6 +35,12 @@ namespace ChaoticLib{
 		void SetTextColor(State s, typename Traits::Color c)
 		{
 			color[s] = c;
+			SetState(state);
+		}
+
+		void SetTextSize(float s)
+		{
+			text.GetFont().SetFontSize(s);
 		}
 
 		void SetColor(State s, typename Traits::Color c)
@@ -48,7 +60,7 @@ namespace ChaoticLib{
 			text.SetSize(s);
 		}
 
-		bool CreateResource(const typename Traits::Resource::CreateStruct &cs) override
+		virtual bool CreateResource(const typename Traits::CreateStruct &cs) override
 		{
 			return text.CreateResource(cs)
 				&& std::all_of(
@@ -59,13 +71,13 @@ namespace ChaoticLib{
 						std::ref(cs)));
 		}
 
-		void DestroyResource() override
+		virtual void DestroyResource() override
 		{
 			text.DestroyResource();
 			std::for_each(brush, brush + 3, std::mem_fn(&Traits::SolidBrush::DestroyResource));
 		}
 
-		void Draw(const typename Traits::PaintStruct &ps) override
+		virtual void Draw(const typename Traits::PaintStruct &ps) override
 		{
 			typename Traits::Rect(this->GetPosition(), this->GetSize()).Fill(ps, brush[state]);
 			text.Draw(ps);

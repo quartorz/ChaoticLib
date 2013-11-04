@@ -68,7 +68,7 @@ namespace ChaoticLib{ namespace Win32{
 	{
 		typedef typename Traits::Object Object;
 		typedef typename Traits::Point Point;
-		typedef typename Traits::Resource::CreateStruct CreateStruct;
+		typedef typename Traits::CreateStruct CreateStruct;
 
 		switch(msg){
 		case WM_MOUSEMOVE:
@@ -99,7 +99,7 @@ namespace ChaoticLib{ namespace Win32{
 					});
 				}
 
-				SetCursorType(static_cast<CursorType>(hts.cursor));
+				SetCursorType(static_cast<CursorType>(static_cast<int>(hts.cursor)));
 
 				TRACKMOUSEEVENT tme;
 				tme.cbSize = sizeof(tme);
@@ -114,7 +114,7 @@ namespace ChaoticLib{ namespace Win32{
 				auto hts = Object::CreateHitTestStruct(static_cast<Derived*>(this));
 				hover->OnMouseLeave(hts);
 				hover = nullptr;
-				SetCursorType(static_cast<CursorType>(hts.cursor));
+				SetCursorType(static_cast<CursorType>(static_cast<int>(hts.cursor)));
 			}
 			break;
 		case WM_LBUTTONDOWN:
@@ -143,7 +143,7 @@ namespace ChaoticLib{ namespace Win32{
 					focus = nullptr;
 				}
 
-				SetCursorType(static_cast<CursorType>(hts.cursor));
+				SetCursorType(static_cast<CursorType>(static_cast<int>(hts.cursor)));
 				::SetCapture(static_cast<Derived*>(this)->GetHwnd());
 			}
 			break;
@@ -159,7 +159,7 @@ namespace ChaoticLib{ namespace Win32{
 					focus->OnLeftRelease(Point(x, y), hts);
 				}
 				
-				SetCursorType(static_cast<CursorType>(hts.cursor));
+				SetCursorType(static_cast<CursorType>(static_cast<int>(hts.cursor)));
 				::ReleaseCapture();
 			}
 			break;

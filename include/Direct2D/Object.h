@@ -13,20 +13,41 @@ namespace ChaoticLib{ namespace Direct2D{
 	public:
 		struct HitTestStruct{
 			HWND hwnd;
-			enum Cursor{
-				Arrow,
-				Hand,
-				Ibeam
+
+			// enum class Cursor: int{
+			//	Arrow,
+			//	Hand,
+			//	Ibeam,
+			// };
+			struct Cursor{
+				static const int Arrow = 0;
+				static const int Hand = 1;
+				static const int Ibeam = 2;
+
+				int cursor;
+
+				Cursor(int c): cursor(c)
+				{
+				}
+				operator int()
+				{
+					return cursor;
+				}
 			}cursor;
+
+			void SetCursor(Cursor c)
+			{
+				cursor = c;
+			}
 		};
 		template <class Window>
 		static HitTestStruct CreateHitTestStruct(Window *w)
 		{
-			HitTestStruct hts = {w->GetHwnd(), HitTestStruct::Arrow};
+			HitTestStruct hts = {w->GetHwnd(), HitTestStruct::Cursor::Arrow};
 			return hts;
 		}
 
-		// 座標は全部絶対座標
+		// 座標はオブジェクトを所有するウィンドウかオブジェクトからの相対座標
 		virtual bool IsColliding(const Point &ap)
 		{
 			return ap.IsInside(GetRect());

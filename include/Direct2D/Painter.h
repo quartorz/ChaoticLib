@@ -25,9 +25,9 @@ namespace ChaoticLib{ namespace Direct2D{
 		void DestroyResource_();
 
 	public:
-		Resource::CreateStruct CreateStruct()
+		ChaoticLib::Direct2D::CreateStruct CreateStruct()
 		{
-			Resource::CreateStruct cd = {
+			ChaoticLib::Direct2D::CreateStruct cd = {
 				target
 			};
 			return cd;

@@ -13,6 +13,8 @@
 #include "ChaoticLib\FlatButton.h"
 #include "ChaoticLib\Manager.h"
 
+#include "UserDefinedObject.h"
+
 using namespace ChaoticLib;
 
 class Window:
@@ -49,10 +51,16 @@ class Window:
 		{
 			::OutputDebugStringW(L"push\n");
 		}
-	}button;
+	}button[2];
+
+	::UserDefinedObject<Window> userdefined;
 
 public:
 	static const wchar_t *classname;
+
+	Window(): userdefined(this)
+	{
+	}
 
 	bool Initialize()
 	{
@@ -70,12 +78,26 @@ public:
 		text->SetText(L"Test\naaa\nbbb\n‚ ‚ ‚ ");
 		text->SetWordWrapping(Direct2D::Text::WordWrapping::NoWrap);
 
-		RegisterObject(&button);
-		button.SetRect(Direct2D::Rect(Direct2D::Point(200, 40), Direct2D::Size(300, 100)));
-		button.SetText(L"Button");
-		button.SetColor(Button::State::None, Direct2D::Color(255, 0, 0));
-		button.SetColor(Button::State::Hover, Direct2D::Color(0, 255,  0));
-		button.SetColor(Button::State::Push, Direct2D::Color(0, 0, 255));
+		RegisterObject(&button[0]);
+		button[0].SetRect(Direct2D::Rect(Direct2D::Point(200, 40), Direct2D::Size(300, 100)));
+		button[0].SetText(L"Button1");
+		button[0].SetColor(Button::State::None, Direct2D::Color(255, 70, 70));
+		button[0].SetColor(Button::State::Hover, Direct2D::Color(255, 80,  80));
+		button[0].SetColor(Button::State::Push, Direct2D::Color(240, 0, 0));
+		button[0].SetTextColor(Button::State::None, Direct2D::Color(255, 255, 255));
+		button[0].SetTextColor(Button::State::Hover, Direct2D::Color(255, 255, 255));
+		button[0].SetTextColor(Button::State::Push, Direct2D::Color(255, 255, 255));
+		button[0].SetTextSize(50.f);
+
+		RegisterObject(&button[1]);
+		button[1].SetRect(Direct2D::Rect(Direct2D::Point(350, 70), Direct2D::Size(300, 100)));
+		button[1].SetText(L"Button2");
+		button[1].SetColor(Button::State::None, Direct2D::Color(90, 90, 255, 128));
+		button[1].SetColor(Button::State::Hover, Direct2D::Color(100, 100, 255, 200));
+		button[1].SetColor(Button::State::Push, Direct2D::Color(0, 0, 240, 200));
+
+		RegisterObject(&userdefined);
+		userdefined.SetSize(Direct2D::Size(80, 150));
 
 		return true;
 	}
@@ -86,7 +108,9 @@ public:
 		DeleteResource(font);
 		DeleteObject(image);
 		DeleteObject(text);
-		UnregisterObject(&button);
+		UnregisterObject(&button[0]);
+		UnregisterObject(&button[1]);
+		UnregisterObject(&userdefined);
 	}
 
 	void OnMove(int x, int y)

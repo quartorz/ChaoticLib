@@ -14,7 +14,7 @@ namespace ChaoticLib{
 		typedef ObjectManager<Derived, Traits, CheckDuplicate, MultiThread> ObjectManager;
 
 	public:
-		bool CreateResource(const typename Traits::Resource::CreateStruct &cs)
+		bool CreateResource(const typename Traits::CreateStruct &cs)
 		{
 			return ResourceManager::CreateResource(cs) && ObjectManager::CreateResource(cs);
 		}

@@ -12,6 +12,16 @@ namespace ChaoticLib{ namespace Direct2D{
 
 	class Brush;
 
+	struct CreateStruct{
+		ID2D1RenderTarget *target;
+
+		template <class Window>
+		static CreateStruct Create(Window &w)
+		{
+			return w->CreateStruct();
+		}
+	};
+
 	struct PaintStruct{
 		ID2D1RenderTarget *target;
 		bool debug;

@@ -9,7 +9,20 @@ int Run()
 	w.Create(0);
 	w.Show();
 
-	return Win32::MessageLoop();
+//	const int interval = 50;
+
+//	LARGE_INTEGER start, end, freq;
+//	::QueryPerformanceFrequency(&freq);
+//	::QueryPerformanceCounter(&start);
+
+	return Win32::MessageLoop(/*[&]{
+		::QueryPerformanceCounter(&end);
+		if((double)(end.QuadPart - start.QuadPart) * 1000 / freq.QuadPart > interval){
+			start = end;
+			::RedrawWindow(w.GetHwnd(), nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
+		}else
+			Sleep(1);
+	}*/);
 }
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)

@@ -4,16 +4,20 @@
 #include <functional>
 #include <algorithm>
 
+#ifdef CreateFont
+#undef CreateFont
+#endif
+
 namespace ChaoticLib{
 
 	template <class Derived, class Traits, bool CheckDuplicate=false, bool MultiThread=false /* –¢ŽÀ‘• */>
 	class ResourceManager{
 		std::unordered_set<typename Traits::Resource*> resources;
-		bool create;
+		bool created;
 
 	public:
 		ResourceManager():
-		  create(false)
+		  created(false)
 		{
 		}
 
@@ -22,9 +26,9 @@ namespace ChaoticLib{
 			std::for_each(resources.begin(), resources.end(), std::mem_fn(&Traits::Resource::DestroyResource));
 		}
 
-		bool CreateResource(const typename Traits::Resource::CreateStruct &cs)
+		bool CreateResource(const typename Traits::CreateStruct &cs)
 		{
-			create = true;
+			created = true;
 			return std::all_of(
 				resources.begin(), resources.end(),
 				std::bind(
@@ -35,7 +39,7 @@ namespace ChaoticLib{
 
 		void DestroyResource()
 		{
-			create = false;
+			created = false;
 			std::for_each(resources.begin(), resources.end(), std::mem_fn(&Traits::Resource::DestroyResource));
 		}
 
@@ -48,7 +52,7 @@ namespace ChaoticLib{
 				return;
 			}
 
-			if(create)
+			if(created)
 				r->CreateResource(static_cast<Derived*>(this)->CreateStruct());
 			resources.insert(r);
 		}

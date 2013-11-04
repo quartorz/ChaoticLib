@@ -12,6 +12,7 @@
 namespace ChaoticLib{ namespace Direct2D{
 
 	struct Traits{
+		typedef CreateStruct CreateStruct;
 		typedef PaintStruct PaintStruct;
 		typedef Color Color;
 		typedef Point Point;
