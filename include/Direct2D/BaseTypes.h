@@ -105,6 +105,15 @@ namespace ChaoticLib{ namespace Direct2D{
 		Line(const Point &p1=Point(), const Point &p2=Point()): p1(p1), p2(p2)
 		{
 		}
+		Point &GetStartPoint()
+		{
+			return p1;
+		}
+		Point &GetEndPoint()
+		{
+			return p2;
+		}
+		void Draw(const PaintStruct &ps, const Brush &brush, float width=1.f);
 	};
 
 	inline bool Point::IsInside(const Rect &r) const

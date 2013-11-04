@@ -49,4 +49,13 @@ namespace ChaoticLib{ namespace Direct2D{
 			brush.Get());
 	}
 
+	void Line::Draw(const PaintStruct &ps, const Brush &brush, float width /* =1.f */)
+	{
+		ps.target->DrawLine(
+			p1,
+			p2,
+			brush.Get(),
+			width);
+	}
+
 } }
