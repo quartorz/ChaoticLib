@@ -66,7 +66,7 @@ public:
 
 	bool Initialize()
 	{
-		Win32::Timer<Window, 100>::SetTimer(50);
+		Win32::Timer<Window, 100>::SetTimer(16);
 		AddScene(&scene0);
 		AddScene(&scene1);
 		return true;
