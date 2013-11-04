@@ -13,7 +13,7 @@
 #include "ChaoticLib\FlatButton.h"
 #include "ChaoticLib\Manager.h"
 
-#include "UserDefinedObject.h"
+#include "MyUserDefinedObject.h"
 
 using namespace ChaoticLib;
 
@@ -53,7 +53,7 @@ class Window:
 		}
 	}button[2];
 
-	::UserDefinedObject<Window> userdefined;
+	MyUserDefinedObject<Window> userdefined;
 
 public:
 	static const wchar_t *classname;

@@ -11,14 +11,14 @@
 #include "ChaoticLib\Scene.h"
 #include "ChaoticLib\SceneManager.h"
 
-#include "UserDefinedObject.h"
+#include "MyUserDefinedObject.h"
 
 using namespace ChaoticLib;
 
 template <class Window>
 class SceneTest: public Scene<Window, Direct2D::Traits>
 {
-	::UserDefinedObject<Window> userdefined0, userdefined1;
+	MyUserDefinedObject<Window> userdefined0, userdefined1;
 
 public:
 	SceneTest(Window *w): Scene(w), userdefined0(w), userdefined1(w)
@@ -40,7 +40,7 @@ public:
 		if(keycode == L' ')
 			GetWindow()->SelectScene(scene = !scene);
 		else if(keycode == L'A'){
-			auto o = new ::UserDefinedObject<Window>(GetWindow());
+			auto o = new MyUserDefinedObject<Window>(GetWindow());
 			RegisterObject(o);
 			o->SetSize(Direct2D::Size(100, 200));
 		}
