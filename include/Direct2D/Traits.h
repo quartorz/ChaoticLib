@@ -8,6 +8,7 @@
 #include "Font.h"
 #include "Image.h"
 #include "Text.h"
+#include "UserDefinedObject.h"
 
 namespace ChaoticLib{ namespace Direct2D{
 
@@ -24,6 +25,13 @@ namespace ChaoticLib{ namespace Direct2D{
 		typedef Font Font;
 		typedef Image Image;
 		typedef Text Text;
+
+		// template <class Derived, class Window, bool CheckDuplicate=false, bool MultiThread=false>
+		// using UserDefinedObject = UserDefinedObject<Derived, Window, CheckDuplicate, MultiThread>;
+		template <class Derived, class Window, bool CheckDuplicate=false, bool MultiThread=false>
+		struct UserDefinedObject{
+			typedef ChaoticLib::Direct2D::UserDefinedObject<Derived, Window, CheckDuplicate, MultiThread> type;
+		};
 	};
 
 } }

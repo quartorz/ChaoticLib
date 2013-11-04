@@ -168,6 +168,9 @@ namespace ChaoticLib{ namespace Direct2D{
 			if(target != nullptr)
 				target->Resize(D2D1::SizeU(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 			break;
+		case WM_DESTROY:
+			DestroyResource_();
+			break;
 		}
 		return true;
 	}

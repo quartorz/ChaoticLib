@@ -39,6 +39,15 @@ namespace ChaoticLib{ namespace Direct2D{
 		{
 		}
 
+		Window *GetWindow()
+		{
+			return window;
+		}
+		Window *GetWindow() const
+		{
+			return const_cast<UserDefinedObject<Derived, Window, CheckDuplicate, MultiThread>*>(this)->GetWindow();
+		}
+
 		virtual bool IsColliding(const Point &ap) override
 		{
 			if(!ap.IsInside(this->GetRect()))
