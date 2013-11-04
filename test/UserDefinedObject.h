@@ -115,12 +115,12 @@ public:
 
 	virtual void OnMouseMove(const Point &ap, Object::HitTestStruct &hts) override
 	{
-		super::OnMouseMove(ap, hts);
-
-		if(!super::IsColliding(ap)){
-			hts.SetCursor(Object::HitTestStruct::Cursor::Hand);
-			if(pushing)
-				this->SetPosition(origin + ap - push_pos);
+		if(!pushing){
+			super::OnMouseMove(ap, hts);
+			if(!super::IsColliding(ap))
+				hts.SetCursor(Object::HitTestStruct::Cursor::Hand);
+		}else {
+			this->SetPosition(origin + ap - push_pos);
 		}
 	}
 

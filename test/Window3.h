@@ -18,17 +18,20 @@ using namespace ChaoticLib;
 template <class Window>
 class SceneTest: public Scene<Window, Direct2D::Traits>
 {
-	::UserDefinedObject<Window> userdefined;
+	::UserDefinedObject<Window> userdefined0, userdefined1;
 
 public:
-	SceneTest(Window *w): Scene(w), userdefined(w)
+	SceneTest(Window *w): Scene(w), userdefined0(w), userdefined1(w)
 	{
-		RegisterObject(&userdefined);
-		userdefined.SetRect(Direct2D::Rect(0, 0, 100, 200));
+		RegisterObject(&userdefined0);
+		RegisterObject(&userdefined1);
+		userdefined0.SetRect(Direct2D::Rect(0, 0, 100, 200));
+		userdefined1.SetRect(Direct2D::Rect(0, 0, 100, 200));
 	}
 	~SceneTest()
 	{
-		UnregisterObject(&userdefined);
+		UnregisterObject(&userdefined0);
+		UnregisterObject(&userdefined1);
 	}
 
 	virtual void OnKeyDown(unsigned keycode) override
