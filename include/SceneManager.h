@@ -2,33 +2,38 @@
 
 #include "Scene.h"
 
-#include <deque>
+#include <unordered_map>
 
 namespace ChaoticLib{
 
 	template <class Derived, class Traits>
 	class SceneManager{
-		std::deque<Scene<Derived, Traits>*> scenes;
+		std::unordered_map<int, Scene<Derived, Traits>*> scenes;
+		Scene<Derived, Traits> *scene;
 		int selected;
 		bool created;
 
 	public:
-		SceneManager(): selected(0), created(false)
+		SceneManager(): scene(nullptr), selected(0), created(false)
 		{
 		}
 
-		void AddScene(Scene<Derived, Traits> *scene)
+		void AddScene(int key, Scene<Derived, Traits> *scene)
 		{
 			if(created)
 				scene->CreateResource(static_cast<Derived*>(this)->CreateStruct());
-			scenes.push_back(scene);
+			scenes.insert(std::make_pair(key, scene));
+			if(this->scene == nullptr)
+				this->scene = scene;
 		}
 
-		void SelectScene(int s)
+		void SelectScene(int key)
 		{
 			scenes[selected]->Hide();
-			scenes[s]->Show();
-			selected = s;
+			scene = scenes[key];
+			scene->Show();
+			selected = key;
+			static_cast<Derived*>(this)->Repaint();
 		}
 
 		int GetSceneCount() const
@@ -41,19 +46,24 @@ namespace ChaoticLib{
 			typedef typename Traits::Size Size;
 			std::for_each(
 				scenes.begin(), scenes.end(),
-				[&w, &h, this](Scene<Derived, Traits> *scene){
-					scene->SetSize(Size(w, h));
+				[&w, &h, this](const std::pair<int, Scene<Derived, Traits>*> &p){
+					p.second->SetSize(Size(w, h));
 			});
 		}
 
 		void OnKeyDown(unsigned keycode)
 		{
-			scenes[selected]->OnKeyDown(keycode);
+			scene->OnKeyDown(keycode);
 		}
 
 		void OnKeyUp(unsigned keycode)
 		{
-			scenes[selected]->OnKeyUp(keycode);
+			scene->OnKeyUp(keycode);
+		}
+
+		void OnTimer(unsigned id)
+		{
+			scene->OnTimer(id);
 		}
 
 		bool CreateResource(const typename Traits::CreateStruct &cs)
@@ -61,27 +71,26 @@ namespace ChaoticLib{
 			created = true;
 			return std::all_of(
 				scenes.begin(), scenes.end(),
-				std::bind(
-					&Scene<Derived, Traits>::CreateResource,
-					std::placeholders::_1,
-					std::ref(cs)));
+				[&cs](const std::pair<int, Scene<Derived, Traits>*> &p){
+					return p.second->CreateResource(cs);
+			});
 		}
 
 		void DestroyResource()
 		{
 			created = false;
-			std::for_each(scenes.begin(), scenes.end(), std::mem_fn(&Scene<Derived, Traits>::DestroyResource));
+			std::for_each(scenes.begin(), scenes.end(), [](const std::pair<int, Scene<Derived, Traits>*> &p){p.second->DestroyResource();});
 		}
 
 		void Draw(const typename Traits::PaintStruct &ps)
 		{
 			static_cast<Derived*>(this)->Clear(ps, typename Traits::Color(255, 255, 255));
-			scenes[selected]->Draw(ps);
+			scene->Draw(ps);
 		}
 
 		template <class Func>
 		void IterateObjects(Func func){
-			func(*scenes[selected]);
+			func(*scene);
 		}
 	};
 

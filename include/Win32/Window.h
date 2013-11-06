@@ -3,6 +3,8 @@
 #include <Windows.h>
 #include <WindowsX.h>
 
+#ifdef USE_BOOST_PP
+
 #include <boost\preprocessor\facilities\intercept.hpp>
 #include <boost\preprocessor\enum_params.hpp>
 #include <boost\preprocessor\repeat_from_to.hpp>
@@ -12,11 +14,15 @@
 #include <boost\preprocessor\arithmetic\dec.hpp>
 #include <boost\preprocessor\arithmetic\sub.hpp>
 
+#endif
+
 #include <tuple>
 
 #include "..\Nil.h"
 
 namespace ChaoticLib{ namespace Win32{
+
+#ifdef USE_BOOST_PP
 
 #define PROC_MAX 50
 
@@ -202,5 +208,132 @@ namespace ChaoticLib{ namespace Win32{
 #undef DECLARE
 #undef CALL_PROC
 #undef WINDOW
+
+#else
+
+	template <class Derived, class... Procs>
+	class Window : public Procs...{
+		static LRESULT CALLBACK WindowProc_SetData(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+		{
+			auto w = reinterpret_cast<Derived*>(::GetWindowLongPtrW(hwnd, 0));
+			if(msg == WM_NCCREATE){
+					auto lpcs = reinterpret_cast<LPCREATESTRUCT>(lParam);
+					::SetWindowLongPtrW(hwnd, 0, reinterpret_cast<LONG_PTR>(lpcs->lpCreateParams));
+					::SetWindowLongPtrW(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WindowProc_Static));
+					w = reinterpret_cast<Derived*>(lpcs->lpCreateParams);
+					w->hwnd = hwnd;
+					w->hparent = lpcs->hwndParent;
+			}
+			if(w == nullptr)
+				return ::DefWindowProcW(hwnd, msg, wParam, lParam);
+				return w->WindowProc(hwnd, msg, wParam, lParam);
+			}
+
+		static LRESULT CALLBACK WindowProc_Static(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+		{
+			auto w = reinterpret_cast<Derived*>(::GetWindowLongPtrW(hwnd, 0)); 
+			if(w == nullptr)
+				return ::DefWindowProcW(hwnd, msg, wParam, lParam);
+			return w->WindowProc(hwnd, msg, wParam, lParam);
+		}
+
+	protected:
+			   HWND hwnd, hparent;
+
+	public:
+		Window() : hwnd(NULL), hparent(hwnd)
+		{
+		}
+
+		static bool Register(const wchar_t *classname)
+		{
+			WNDCLASSEXW wcex;
+			wcex.cbSize = sizeof(WNDCLASSEX);
+			wcex.style = CS_HREDRAW | CS_VREDRAW;
+			wcex.lpfnWndProc = WindowProc_SetData;
+			wcex.cbClsExtra = 0;
+			wcex.cbWndExtra = sizeof(void*);
+			wcex.hInstance = ::GetModuleHandleW(NULL);
+			wcex.hIcon = nullptr;
+			wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+			wcex.hbrBackground = nullptr;
+			wcex.lpszMenuName = nullptr;
+			wcex.lpszClassName = classname;
+			wcex.hIconSm = nullptr;
+
+			return ::RegisterClassExW(&wcex) != 0;
+		}
+
+		static bool Register(void)
+		{
+			return Register(Derived::classname);
+		}
+
+		HWND GetHwnd() const
+		{
+			return hwnd;
+		}
+
+		void Show(void)
+		{
+			::ShowWindow(hwnd, SW_SHOW);
+		}
+
+		void Hide(void)
+		{
+			::ShowWindow(hwnd, SW_HIDE);
+		}
+
+		std::tuple<int, int> GetSize()
+		{
+			RECT rc;
+			::GetClientRect(hwnd, &rc);
+			return std::tuple<int, int>(rc.right, rc.bottom);
+		}
+
+		std::tuple<int, int> GetPosition()
+		{
+			RECT rc;
+			::GetClientRect(hwnd, &rc);
+			return std::tuple<int, int>(rc.left, rc.top);
+		}
+
+		LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+		{
+			if(sizeof...(Procs) > 0){
+				LRESULT lresult = 0l;
+				if (!CallProc<Procs..., ChaoticLib::Nil>(hwnd, msg, wParam, lParam, lresult))
+					return lresult;
+			}
+
+			switch(msg){
+			case WM_CREATE:
+				if(!static_cast<Derived*>(this)->Initialize())
+					return -1l;
+				break;
+			case WM_DESTROY:
+				static_cast<Derived*>(this)->Uninitialize();
+				break;
+			}
+
+			return ::DefWindowProcW(hwnd, msg, wParam, lParam);
+		}
+
+	private:
+		template <class Proc, class... Procs>
+		bool CallProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT &lresult)
+		{
+			return this->Proc::WindowProc(hwnd, msg, wParam, lParam, lresult)
+				&& CallProc<Procs...>(hwnd, msg, wParam, lParam, lresult);
+		}
+
+		template <>
+		bool CallProc<ChaoticLib::Nil>(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT &lresult)
+		{
+			return true;
+		}
+	};
+
+#endif
 
 } }

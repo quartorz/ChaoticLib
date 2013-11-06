@@ -111,7 +111,6 @@ namespace ChaoticLib{ namespace Direct2D{
 	struct Line{
 		Point p1, p2;
 
-	public:
 		Line(const Point &p1=Point(), const Point &p2=Point()): p1(p1), p2(p2)
 		{
 		}
@@ -124,6 +123,25 @@ namespace ChaoticLib{ namespace Direct2D{
 			return p2;
 		}
 		void Draw(const PaintStruct &ps, const Brush &brush, float width=1.f);
+	};
+
+	struct Circle{
+		Point center;
+		FLOAT radius;
+
+		Circle(const Point &p, FLOAT r): center(p), radius(r)
+		{
+		}
+		Point &GetCenter()
+		{
+			return center;
+		}
+		FLOAT GetRadius()
+		{
+			return radius;
+		}
+		void Draw(const PaintStruct &ps, const Brush &brush, float width=1.f);
+		void Fill(const PaintStruct &ps, const Brush &brush);
 	};
 
 	inline bool Point::IsInside(const Rect &r) const

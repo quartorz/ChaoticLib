@@ -10,36 +10,38 @@
 #include "ChaoticLib\Direct2D\Font.h"
 #include "ChaoticLib\ResourceManager.h"
 
-using namespace ChaoticLib;
+#include "Aliases.h"
 
-class Window:
-	public Win32::Window<
-		Window,
-		Win32::Movable<Window>,
-		Win32::QuitOnClose<Window>,
-		Win32::Timer<Window, 100>,
-		Direct2D::Painter<Window>,
-		ResourceManager<Window, Direct2D::Traits>
+using namespace Aliases;
+
+class MainWindow:
+	public WindowSystem::Window<
+		MainWindow,
+		WindowSystem::Movable<MainWindow>,
+		WindowSystem::QuitOnClose<MainWindow>,
+		WindowSystem::Timer<MainWindow, 100>,
+		Painter<MainWindow>
 	>,
-	public Win32::Creator<Window>
+	public ResourceManager<MainWindow>,
+	public WindowSystem::Creator<MainWindow>
 {
 	// template <UINT ID>
-	// using Timer = Win32::Timer<Window, ID>;
+	// using Timer = Win32::Timer<MainWindow, ID>;
 	template <UINT ID>
 	struct Timer
 	{
-		typedef Win32::Timer<Window, ID> type;
+		typedef WindowSystem::Timer<MainWindow, ID> type;
 	};
 
-	Direct2D::SolidBrush *b;
-	Direct2D::Font *font;
+	SolidBrush *b;
+	Aliases::Font *font;
 
 public:
 	static const wchar_t *classname;
 
 	bool Initialize()
 	{
-		b = CreateSolidBrush(Direct2D::Color(0, 0, 255));
+		b = CreateSolidBrush(Color(0, 0, 255));
 		font = CreateFont();
 		font->SetFontSize(40.f);
 		Timer<100>::type::SetTimer(2000);
@@ -60,12 +62,12 @@ public:
 
 	void Draw(const PaintStruct &ps)
 	{
-		Clear(ps, Direct2D::Color(1.f));
+		Clear(ps, Color(1.f));
 
 		int w;
 		std::tie(w, std::ignore) = GetSize();
-		DrawLine(ps, b, Direct2D::Point(0, 0), Direct2D::Point(w / 2, 100));
-		DrawText(ps, font, b, L"Text", Direct2D::Rect(30.f, 60.f, 500.f, 600.f));
+		DrawLine(ps, b, Line(Point(0, 0), Point(w / 2, 100)));
+		DrawText(ps, font, b, L"Text", Rect(30.f, 60.f, 500.f, 600.f));
 	}
 
 	void OnTimer(unsigned id)
@@ -77,4 +79,4 @@ public:
 	}
 };
 
-const wchar_t *Window::classname = L"Window";
+const wchar_t *MainWindow::classname = L"Window";

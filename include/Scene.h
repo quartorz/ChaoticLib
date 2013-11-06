@@ -3,12 +3,12 @@
 namespace ChaoticLib{
 
 	template <class Window, class Traits>
-	class Scene: public Traits::UserDefinedObject<Scene<Window, Traits>, Window>::type
+	class Scene: public Traits::template UserDefinedObject<Scene<Window, Traits>, Window>
 	{
-		typedef typename Traits::UserDefinedObject<Scene<Window, Traits>, Window>::type super;
+		typedef typename Traits::template UserDefinedObject<Scene<Window, Traits>, Window> Base;
 
 	public:
-		Scene(Window *w): super(w)
+		Scene(Window *w): Base(w)
 		{
 		}
 		virtual void Show()
@@ -21,6 +21,9 @@ namespace ChaoticLib{
 		{
 		}
 		virtual void OnKeyUp(unsigned)
+		{
+		}
+		virtual void OnTimer(unsigned)
 		{
 		}
 	};

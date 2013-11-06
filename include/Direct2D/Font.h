@@ -11,11 +11,13 @@ namespace ChaoticLib{ namespace Direct2D{
 
 	class Font: public Resource{
 	public:
-		// enum class FontWeight: DWRITE_FONT_WEIGHT{
-		// 	Light = DWRITE_FONT_WEIGHT_LIGHT,
-		// 	Normal = DWRITE_FONT_WEIGHT_NORMAL,
-		// 	Bold = DWRITE_FONT_WEIGHT_BOLD,
-		// };
+#ifndef DONT_USE_ENUM_CLASS
+		enum class FontWeight: unsigned{
+			Light = DWRITE_FONT_WEIGHT_LIGHT,
+			Normal = DWRITE_FONT_WEIGHT_NORMAL,
+			Bold = DWRITE_FONT_WEIGHT_BOLD,
+		};
+#else
 		struct FontWeight{
 			static const DWRITE_FONT_WEIGHT Light = DWRITE_FONT_WEIGHT_LIGHT;
 			static const DWRITE_FONT_WEIGHT Normal = DWRITE_FONT_WEIGHT_NORMAL;
@@ -32,10 +34,13 @@ namespace ChaoticLib{ namespace Direct2D{
 				return weight;
 			}
 		};
-		// enum class FontStyle: DWRITE_FONT_STYLE{
-		//	Normal,
-		//	Italic,
-		// };
+#endif
+#ifndef DONT_USE_ENUM_CLASS
+		enum class FontStyle: unsigned{
+			Normal,
+			Italic,
+		};
+#else
 		struct FontStyle{
 			static const DWRITE_FONT_STYLE Normal = DWRITE_FONT_STYLE_NORMAL;
 			static const DWRITE_FONT_STYLE Italic = DWRITE_FONT_STYLE_ITALIC;
@@ -50,6 +55,7 @@ namespace ChaoticLib{ namespace Direct2D{
 				return style;
 			}
 		};
+#endif
 
 	private:
 		Factory factory;

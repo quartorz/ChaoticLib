@@ -1,22 +1,15 @@
 #pragma once
 
-#include "ChaoticLib\Win32\Window.h"
-#include "ChaoticLib\Win32\Procs.h"
-#include "ChaoticLib\Win32\Creator.h"
-#include "ChaoticLib\Win32\ObjectProcessor.h"
 #include "ChaoticLib\Win32\MessageLoop.h"
-#include "ChaoticLib\Direct2D\BaseTypes.h"
-#include "ChaoticLib\Direct2D\Painter.h"
-#include "ChaoticLib\Direct2D\Traits.h"
-#include "ChaoticLib\Scene.h"
-#include "ChaoticLib\SceneManager.h"
 
+#include "Aliases.h"
 #include "MyUserDefinedObject.h"
 
-using namespace ChaoticLib;
+using namespace Aliases;
+using namespace Aliases::WindowSystem;
 
 template <class Window>
-class SceneTest: public Scene<Window, Direct2D::Traits>
+class SceneTest: public Scene<Window>
 {
 	MyUserDefinedObject<Window> userdefined0, userdefined1;
 
@@ -25,8 +18,8 @@ public:
 	{
 		RegisterObject(&userdefined0);
 		RegisterObject(&userdefined1);
-		userdefined0.SetRect(Direct2D::Rect(0, 0, 100, 200));
-		userdefined1.SetRect(Direct2D::Rect(0, 0, 100, 200));
+		userdefined0.SetRect(Rect(0, 0, 100, 200));
+		userdefined1.SetRect(Rect(0, 0, 100, 200));
 	}
 	~SceneTest()
 	{
@@ -42,38 +35,41 @@ public:
 		else if(keycode == L'A'){
 			auto o = new MyUserDefinedObject<Window>(GetWindow());
 			RegisterObject(o);
-			o->SetSize(Direct2D::Size(100, 200));
+			o->SetSize(Size(100, 200));
 		}
 	}
 };
 
-class Window:
-	public Win32::Window<
-		Window,
-		Win32::QuitOnClose<Window>,
-		Win32::Resizable<Window>, // ñ≥Ç¢Ç∆SceneManager::OnSizeÇ™åƒÇŒÇÍÇ»Ç¢Å®âΩÇ‡ï\é¶Ç≥ÇÍÇ»Ç¢
-		Win32::Keyboard<Window>,
-		Win32::ObjectProcessor<Window, Direct2D::Traits>,
-		Win32::Timer<Window, 100>,
-		Direct2D::Painter<Window>
+class MainWindow:
+	public Window<
+		MainWindow,
+		QuitOnClose<MainWindow>,
+		Resizable<MainWindow>, // ñ≥Ç¢Ç∆SceneManager::OnSizeÇ™åƒÇŒÇÍÇ»Ç¢Å®âΩÇ‡ï\é¶Ç≥ÇÍÇ»Ç¢
+		Keyboard<MainWindow>,
+		Aliases::ObjectProcessor<MainWindow>,
+		Timer<MainWindow, 100>,
+		Painter<MainWindow>
 	>,
-	public SceneManager<Window, Direct2D::Traits>,
-	public Win32::Creator<Window>
+	public SceneManager<MainWindow>,
+	public ChaoticLib::Win32::Creator<MainWindow>
 {
-	SceneTest<Window> scene0, scene1;
+	template <unsigned ID>
+	using Timer = WindowSystem::Timer<MainWindow, ID>;
+
+	SceneTest<MainWindow> scene0, scene1;
 
 public:
 	static const wchar_t *classname;
 
-	Window(): scene0(this), scene1(this)
+	MainWindow(): scene0(this), scene1(this)
 	{
 	}
 
 	bool Initialize()
 	{
-		Win32::Timer<Window, 100>::SetTimer(16);
-		AddScene(&scene0);
-		AddScene(&scene1);
+		Timer<100>::SetTimer(16);
+		AddScene(0, &scene0);
+		AddScene(1, &scene1);
 		return true;
 	}
 
@@ -88,4 +84,4 @@ public:
 	}
 };
 
-const wchar_t *Window::classname = L"Window";
+const wchar_t *MainWindow::classname = L"Window";

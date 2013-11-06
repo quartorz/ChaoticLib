@@ -125,7 +125,7 @@ void Image::Draw(const PaintStruct &ps)
 		bmp,
 		dest,
 		1.f,
-		interpolationmode,
+		static_cast<D2D1_BITMAP_INTERPOLATION_MODE>(interpolationmode),
 		src);
 }
 

@@ -26,12 +26,10 @@ namespace ChaoticLib{ namespace Direct2D{
 
 		std::deque<Object*>::reverse_iterator FindObject(const Point &ap)
 		{
+			Point p = ap - this->GetPosition();
 			return std::find_if(
 				objects.rbegin(), objects.rend(),
-				std::bind(
-					&Object::IsColliding,
-					std::placeholders::_1,
-					std::cref(ap - this->GetPosition())));
+				[&p](Object *o){return o->IsColliding(p);});
 		}
 
 	public:

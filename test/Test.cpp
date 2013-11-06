@@ -1,12 +1,15 @@
 #include "ChaoticLib\ChaoticLib.h"
-#include "Window3.h"
+#include "SnakeGame.h"
 
 int Run()
 {
-	Window::Register();
+	MainWindow::Register();
 
-	Window w;
-	w.Create(0);
+	RECT rc = {0, 0, 800, 600};
+	::AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW & ~WS_SIZEBOX, FALSE);
+
+	MainWindow w;
+	w.Create(0, WS_OVERLAPPEDWINDOW & ~WS_SIZEBOX, L"Sample", CW_USEDEFAULT, 0, rc.right - rc.left, rc.bottom - rc.top);
 	w.Show();
 
 //	const int interval = 50;
@@ -15,7 +18,7 @@ int Run()
 //	::QueryPerformanceFrequency(&freq);
 //	::QueryPerformanceCounter(&start);
 
-	return Win32::MessageLoop(/*[&]{
+	return ChaoticLib::Win32::MessageLoop(/*[&]{
 		::QueryPerformanceCounter(&end);
 		if((double)(end.QuadPart - start.QuadPart) * 1000 / freq.QuadPart > interval){
 			start = end;
@@ -29,14 +32,14 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
 	if(FAILED(::CoInitialize(NULL)))
 		return 0;
-	if(!Initialize()){
+	if(!ChaoticLib::Initialize()){
 		::CoUninitialize();
 		return 0;
 	}
 
 	int r = Run();
 
-	Uninitialize();
+	ChaoticLib::Uninitialize();
 	::CoUninitialize();
 
 	return r;

@@ -38,9 +38,9 @@ bool Text::Create()
 		&layout)))
 		return false;
 
-	layout->SetTextAlignment(align);
-	layout->SetParagraphAlignment(p_align);
-	layout->SetWordWrapping(wordwrapping);
+	layout->SetTextAlignment(static_cast<DWRITE_TEXT_ALIGNMENT>(align));
+	layout->SetParagraphAlignment(static_cast<DWRITE_PARAGRAPH_ALIGNMENT>(p_align));
+	layout->SetWordWrapping(static_cast<DWRITE_WORD_WRAPPING>(wordwrapping));
 
 	std::for_each(
 		fontsizes.begin(), fontsizes.end(),
@@ -65,7 +65,7 @@ bool Text::Create()
 	std::for_each(
 		fontweights.begin(), fontweights.end(),
 		[this](std::pair<DWRITE_TEXT_RANGE, FontWeight> &p){
-			layout->SetFontWeight(p.second, p.first);
+			layout->SetFontWeight(static_cast<DWRITE_FONT_WEIGHT>(p.second), p.first);
 	});
 	SetColors();
 
@@ -145,7 +145,7 @@ void Text::SetWordWrapping(WordWrapping ww)
 	wordwrapping = ww;
 
 	if(layout != nullptr)
-		layout->SetWordWrapping(ww);
+		layout->SetWordWrapping(static_cast<DWRITE_WORD_WRAPPING>(ww));
 }
 
 void Text::SetAlign(Align a)
@@ -153,7 +153,7 @@ void Text::SetAlign(Align a)
 	 align = a;
 
 	 if(layout != nullptr)
-		 layout->SetTextAlignment(a);
+		 layout->SetTextAlignment(static_cast<DWRITE_TEXT_ALIGNMENT>(a));
 }
 
 void Text::SetParagraphAlign(ParagraphAlign pa)
@@ -161,7 +161,7 @@ void Text::SetParagraphAlign(ParagraphAlign pa)
 	p_align = pa;
 
 	 if(layout != nullptr)
-		 layout->SetParagraphAlignment(pa);
+		 layout->SetParagraphAlignment(static_cast<DWRITE_PARAGRAPH_ALIGNMENT>(pa));
 }
 
 void Text::SetUnderline(int start, int end, bool set /* =true */)

@@ -58,4 +58,19 @@ namespace ChaoticLib{ namespace Direct2D{
 			width);
 	}
 
+	void Circle::Draw(const PaintStruct &ps, const Brush &brush, float width /* =1.f */)
+	{
+		ps.target->DrawEllipse(
+			D2D1::Ellipse(center, radius, radius),
+			brush.Get(),
+			width);
+	}
+
+	void Circle::Fill(const PaintStruct &ps, const Brush &brush)
+	{
+		ps.target->FillEllipse(
+			D2D1::Ellipse(center, radius, radius),
+			brush.Get());
+	}
+
 } }

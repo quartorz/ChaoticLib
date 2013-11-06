@@ -6,11 +6,13 @@ namespace ChaoticLib{
 	class Button: public Traits::Object
 	{
 	public:
-		// enum class State: int{
-		//	None,
-		//	Hover.
-		//	Push,
-		// };
+#ifndef DONT_USE_ENUM_CLASS
+		enum class State: int{
+			None,
+			Hover,
+			Push,
+		};
+#else
 		struct State{
 			static const int None = 0;
 			static const int Hover = 1;
@@ -26,6 +28,7 @@ namespace ChaoticLib{
 				return state;
 			}
 		};
+#endif
 
 	protected:
 		State state;

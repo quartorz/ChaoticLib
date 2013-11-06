@@ -12,11 +12,14 @@ namespace ChaoticLib{ namespace Direct2D{
 
 	class Image: public Object{
 	public:
-		// enum class DrawingMode: int{
-		//	Stretch,
-		//	Squeeze,
-		//	Trim,
-		// };
+
+#ifndef DONT_USE_ENUM_CLASS
+		enum class DrawingMode: int{
+			Stretch,
+			Squeeze,
+			Trim,
+		};
+#else
 		struct DrawingMode{
 			static const int Stretch = 0;
 			static const int Squeeze = 1;
@@ -32,10 +35,13 @@ namespace ChaoticLib{ namespace Direct2D{
 				return mode;
 			}
 		};
-		// enum class InterpolationMode: D2D1_BITMAP_INTERPOLATION_MODE{
-		//	NearestNeighbor = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
-		//	Linear = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
-		// };
+#endif
+#ifndef DONT_USE_ENUM_CLASS
+		enum class InterpolationMode: unsigned{
+			NearestNeighbor = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
+			Linear = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
+		};
+#else
 		struct InterpolationMode{
 			static const D2D1_BITMAP_INTERPOLATION_MODE NearestNeighbor = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
 			static const D2D1_BITMAP_INTERPOLATION_MODE Linear = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
@@ -50,6 +56,7 @@ namespace ChaoticLib{ namespace Direct2D{
 				return interpolationmode;
 			}
 		};
+#endif
 
 	private:
 		WICDecoder decoder;

@@ -15,11 +15,13 @@ namespace ChaoticLib{ namespace Direct2D{
 
 	class Text: public Object{
 	public:
-		// enum class Align: DWRITE_TEXT_ALIGNMENT{
-		//	Left = DWRITE_TEXT_ALIGNMENT_LEADING,
-		//	Center = DWRITE_TEXT_ALIGNMENT_CENTER,
-		//	Right = DWRITE_TEXT_ALIGNMENT_TRAILING,
-		// };
+#ifndef DONT_USE_ENUM_CLASS
+		enum class Align: unsigned{
+			Left = DWRITE_TEXT_ALIGNMENT_LEADING,
+			Center = DWRITE_TEXT_ALIGNMENT_CENTER,
+			Right = DWRITE_TEXT_ALIGNMENT_TRAILING,
+		};
+#else
 		struct Align{
 			static const DWRITE_TEXT_ALIGNMENT Left = DWRITE_TEXT_ALIGNMENT_LEADING;
 			static const DWRITE_TEXT_ALIGNMENT Center = DWRITE_TEXT_ALIGNMENT_CENTER;
@@ -35,11 +37,14 @@ namespace ChaoticLib{ namespace Direct2D{
 				return align;
 			}
 		};
-		// enum class ParagraphAlign: DWRITE_PARAGRAPH_ALIGNMENT{
-		//	Top = DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
-		//	Center = DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
-		//	Right = DWRITE_PARAGRAPH_ALIGNMENT_FAR,
-		// };
+#endif
+#ifndef DONT_USE_ENUM_CLASS
+		enum class ParagraphAlign: unsigned{
+			Top = DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
+			Center = DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
+			Right = DWRITE_PARAGRAPH_ALIGNMENT_FAR,
+		};
+#else
 		struct ParagraphAlign{
 			static const DWRITE_PARAGRAPH_ALIGNMENT Top = DWRITE_PARAGRAPH_ALIGNMENT_NEAR;
 			static const DWRITE_PARAGRAPH_ALIGNMENT Center = DWRITE_PARAGRAPH_ALIGNMENT_CENTER;
@@ -55,10 +60,13 @@ namespace ChaoticLib{ namespace Direct2D{
 				return align;
 			}
 		};
-		// enum class WordWrapping: DWRITE_WORD_WRAPPING{
-		//	Wrap = DWRITE_WORD_WRAPPING_WRAP,
-		//	NoWrap = DWRITE_WORD_WRAPPING_NO_WRAP,
-		// };
+#endif
+#ifndef DONT_USE_ENUM_CLASS
+		enum class WordWrapping: unsigned{
+			Wrap = DWRITE_WORD_WRAPPING_WRAP,
+			NoWrap = DWRITE_WORD_WRAPPING_NO_WRAP,
+		};
+#else
 		struct WordWrapping{
 			static const DWRITE_WORD_WRAPPING Wrap = DWRITE_WORD_WRAPPING_WRAP;
 			static const DWRITE_WORD_WRAPPING NoWrap = DWRITE_WORD_WRAPPING_NO_WRAP;
@@ -73,6 +81,7 @@ namespace ChaoticLib{ namespace Direct2D{
 				return wordwrapping;
 			}
 		};
+#endif
 
 		typedef Font::FontWeight FontWeight;
 

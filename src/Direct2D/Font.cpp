@@ -59,8 +59,8 @@ namespace ChaoticLib{ namespace Direct2D{
 		if(SUCCEEDED(factory[DWrite]->CreateTextFormat(
 			name.c_str(),
 			NULL,
-			weight,
-			style,
+			static_cast<DWRITE_FONT_WEIGHT>(weight),
+			static_cast<DWRITE_FONT_STYLE>(style),
 			DWRITE_FONT_STRETCH_NORMAL,
 			size,
 			locale.c_str(),

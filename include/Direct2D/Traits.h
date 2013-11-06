@@ -19,6 +19,8 @@ namespace ChaoticLib{ namespace Direct2D{
 		typedef Point Point;
 		typedef Size Size;
 		typedef Rect Rect;
+		typedef Line Line;
+		typedef Circle Circle;
 		typedef Resource Resource;
 		typedef Object Object;
 		typedef SolidBrush SolidBrush;
@@ -26,12 +28,15 @@ namespace ChaoticLib{ namespace Direct2D{
 		typedef Image Image;
 		typedef Text Text;
 
-		// template <class Derived, class Window, bool CheckDuplicate=false, bool MultiThread=false>
-		// using UserDefinedObject = UserDefinedObject<Derived, Window, CheckDuplicate, MultiThread>;
+#ifndef DONT_USE_TEMPLATE_ALIASES
+		template <class Derived, class Window, bool CheckDuplicate=false, bool MultiThread=false>
+		using UserDefinedObject = UserDefinedObject<Derived, Window, CheckDuplicate, MultiThread>;
+#else
 		template <class Derived, class Window, bool CheckDuplicate=false, bool MultiThread=false>
 		struct UserDefinedObject{
 			typedef ChaoticLib::Direct2D::UserDefinedObject<Derived, Window, CheckDuplicate, MultiThread> type;
 		};
+#endif
 	};
 
 } }

@@ -14,10 +14,11 @@ namespace ChaoticLib{
 		typename Traits::Text text;
 		typename Traits::Color color[3];
 
+	protected:
 		virtual void SetState(State s) override
 		{
 			Button::SetState(s);
-			text.SetColor(color[s]);
+			text.SetColor(color[static_cast<int>(s)]);
 		}
 
 	public:
@@ -34,7 +35,7 @@ namespace ChaoticLib{
 
 		void SetTextColor(State s, typename Traits::Color c)
 		{
-			color[s] = c;
+			color[static_cast<int>(s)] = c;
 			SetState(state);
 		}
 
@@ -45,7 +46,7 @@ namespace ChaoticLib{
 
 		void SetColor(State s, typename Traits::Color c)
 		{
-			brush[s].SetColor(c);
+			brush[static_cast<int>(s)].SetColor(c);
 		}
 
 		virtual void SetPosition(const typename Traits::Point &p) override
@@ -79,7 +80,7 @@ namespace ChaoticLib{
 
 		virtual void Draw(const typename Traits::PaintStruct &ps) override
 		{
-			typename Traits::Rect(this->GetPosition(), this->GetSize()).Fill(ps, brush[state]);
+			typename Traits::Rect(this->GetPosition(), this->GetSize()).Fill(ps, brush[static_cast<int>(state)]);
 			text.Draw(ps);
 		}
 	};
