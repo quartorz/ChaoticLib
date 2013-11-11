@@ -6,6 +6,8 @@
 
 #pragma comment(lib, "d2d1")
 #pragma comment(lib, "dwrite")
+#pragma comment(lib, "dwmapi")
+#pragma comment(lib, "uxtheme")
 
 namespace ChaoticLib{ namespace Direct2D{
 
@@ -32,45 +34,6 @@ namespace ChaoticLib{ namespace Direct2D{
 			delete _factory;
 			_factory = nullptr;
 		}
-	}
-
-	void Rect::Draw(const PaintStruct &ps, const Brush &brush, float width /* =1.f */)
-	{
-		ps.target->DrawRectangle(
-			*this,
-			brush.Get(),
-			width);
-	}
-
-	void Rect::Fill(const PaintStruct &ps, const Brush &brush)
-	{
-		ps.target->FillRectangle(
-			*this,
-			brush.Get());
-	}
-
-	void Line::Draw(const PaintStruct &ps, const Brush &brush, float width /* =1.f */)
-	{
-		ps.target->DrawLine(
-			p1,
-			p2,
-			brush.Get(),
-			width);
-	}
-
-	void Circle::Draw(const PaintStruct &ps, const Brush &brush, float width /* =1.f */)
-	{
-		ps.target->DrawEllipse(
-			D2D1::Ellipse(center, radius, radius),
-			brush.Get(),
-			width);
-	}
-
-	void Circle::Fill(const PaintStruct &ps, const Brush &brush)
-	{
-		ps.target->FillEllipse(
-			D2D1::Ellipse(center, radius, radius),
-			brush.Get());
 	}
 
 } }

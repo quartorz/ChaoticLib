@@ -21,6 +21,21 @@ inline void SafeRelease(T *&p)
 
 // http://msdn.microsoft.com/ja-jp/library/windows/desktop/dd941735%28v=vs.85%29.aspx
 
+////////////////////////////////////////
+// COM inheritance helpers.
+
+
+// Releases a COM object and nullifies pointer.
+template <typename InterfaceType>
+inline void SafeRelease(InterfaceType** currentObject)
+{
+	if(*currentObject != NULL)
+	{
+		(*currentObject)->Release();
+		*currentObject = NULL;
+	}
+}
+
 // Acquires an additional reference, if non-null.
 template <typename InterfaceType>
 inline InterfaceType* SafeAcquire(InterfaceType* newObject)

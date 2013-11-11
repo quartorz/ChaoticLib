@@ -9,6 +9,9 @@
 #include <algorithm>
 #include <random>
 #include <ctime>
+#include <string>
+
+#include <iostream>
 
 template <class Window>
 class Title: public Aliases::Scene<Window>
@@ -41,14 +44,19 @@ public:
 		button.SetSize(Aliases::Size(800, 600));
 		button.SetText(L"Click to start");
 		button.SetTextSize(30.f);
-		button.SetColor(Button::State::None, Aliases::Color(255, 255, 255));
-		button.SetColor(Button::State::Hover, Aliases::Color(255, 255, 255));
-		button.SetColor(Button::State::Push, Aliases::Color(255, 255, 255));
+		button.SetColor(Button::State::None, Aliases::Color(255, 255, 255, 0));
+		button.SetColor(Button::State::Hover, Aliases::Color(255, 255, 255, 0));
+		button.SetColor(Button::State::Push, Aliases::Color(255, 255, 255, 0));
 		button.SetTextColor(Button::State::None, Aliases::Color(100, 100, 100));
 		button.SetTextColor(Button::State::Hover, Aliases::Color(128, 128, 128));
 		button.SetTextColor(Button::State::Push, Aliases::Color());
 	}
 
+	virtual void Draw(const Aliases::PaintStruct &ps) override
+	{
+		this->GetWindow()->Clear(ps, Aliases::Color(0, 0, 0, 0));
+		this->Aliases::Scene<Window>::Draw(ps);
+	}
 };
 
 template <class Window>
@@ -104,7 +112,7 @@ public:
 		body.push_back({40, 30});
 		PutFood();
 
-		this->GetWindow()->WindowSystem::Timer<Window, 100>::SetTimer(100);
+		this->GetWindow()->WindowSystem::Timer<Window>::SetTimer(100, 100);
 	}
 	void OnKeyDown(unsigned keycode) override
 	{
@@ -118,14 +126,13 @@ public:
 		case VK_RIGHT:
 			TurnRight();
 			break;
-		case L'A':
-			body.push_back(body.back());
 		}
 	}
 	void OnTimer(unsigned id) override
 	{
 		if(id == 100){
-			this->GetWindow()->Repaint();
+			turned = false;
+
 			std::copy_backward(body.begin(), body.end() - 1, body.end());
 
 			auto &head = body[0];
@@ -145,25 +152,25 @@ public:
 			}
 			if(std::get<0>(head) < 0 || std::get<1>(head) < 0
 				|| std::get<0>(head) >= 80 || std::get<1>(head) >= 60
-				|| std::find(body.begin() + 1, body.end(), body.front()) != body.end()){
-				this->GetWindow()->WindowSystem::Timer<Window, 100>::KillTimer();
-				::MessageBoxW(this->GetWindow()->GetHwnd(), L"ゲームオーバー", L"ゲームオーバー", MB_OK);
+				|| std::find(body.begin() + 1, body.end(), body.front()) != body.end()){				
+				this->GetWindow()->WindowSystem::Timer<Window>::KillTimer(100);
+				::MessageBoxW(this->GetWindow()->GetHwnd(), (L"記録:" + std::to_wstring(body.size())).c_str(), L"ゲームオーバー", MB_OK);
 				this->GetWindow()->ChangeScene(Window::Scene::Title);
 			}
 			if(head == food){
 				body.push_back(body.back());
 				PutFood();
 			}
+
+			this->GetWindow()->Repaint();
 		}
 	}
 	void Draw(const Aliases::PaintStruct &ps) override
 	{
-		turned = false;
-
-		this->GetWindow()->Clear(ps, Aliases::Color(255, 255, 255));
-		Aliases::Circle(Aliases::Point(std::get<0>(food) * 10 + 5, std::get<1>(food) * 10 + 5), 5.f).Fill(ps, *food_brush);
+		this->GetWindow()->Clear(ps, Aliases::Color(255, 255, 255, 100));
+		Aliases::Circle(Aliases::Point(std::get<0>(food) * 10 + 5, std::get<1>(food) * 10 + 5), 5.f).Fill(ps, food_brush);
 		for(auto &p: body){
-			Aliases::Circle(Aliases::Point(std::get<0>(p) * 10 + 5, std::get<1>(p) * 10 + 5), 5.f).Fill(ps, *body_brush);
+			Aliases::Circle(Aliases::Point(std::get<0>(p) * 10 + 5, std::get<1>(p) * 10 + 5), 5.f).Fill(ps, body_brush);
 		}
 	}
 };
@@ -177,7 +184,7 @@ class MainWindow:
 		WindowSystem::Resizable<MainWindow>, // 無いとSceneManager::OnSizeが呼ばれない→何も表示されない
 		WindowSystem::Keyboard<MainWindow>,
 		Aliases::ObjectProcessor<MainWindow>,
-		WindowSystem::Timer<MainWindow, 100>,
+		WindowSystem::Timer<MainWindow>,
 		Aliases::Painter<MainWindow>
 	>,
 	public Aliases::SceneManager<MainWindow>,
@@ -204,6 +211,21 @@ public:
 	{
 		this->AddScene(static_cast<int>(Scene::Title), &title);
 		this->AddScene(static_cast<int>(Scene::Game), &game);
+
+		auto hash = this->AddKeyboardHandler([](unsigned keycode, bool is_push){
+			std::wcout << L"key: " << static_cast<wchar_t>(keycode) << L' ';
+			if(is_push)
+				std::wcout << L"push";
+			else
+				std::wcout << L"release";
+			std::wcout << std::endl;
+		}, L'A', std::make_tuple(L'A', L'D'));
+
+		this->DeleteKeyboardHandler(hash, L'A');
+
+		this->SetTimer(200, 1000);
+		auto h = this->AddTimerHandler([](unsigned id){std::wcout << L"id: " << id << std::endl;}, 100, 200);
+		this->DeleteTimerHandler(h, 200);
 
 		return true;
 	}

@@ -1,6 +1,8 @@
 #include "ChaoticLib\ChaoticLib.h"
 #include "SnakeGame.h"
 
+#include <cstdio>
+
 int Run()
 {
 	MainWindow::Register();
@@ -37,7 +39,14 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 		return 0;
 	}
 
+	::AllocConsole();
+
+	FILE *fp;
+	::_wfreopen_s(&fp, L"CONOUT$", L"w", stdout);
+
 	int r = Run();
+
+	::fclose(fp);
 
 	ChaoticLib::Uninitialize();
 	::CoUninitialize();

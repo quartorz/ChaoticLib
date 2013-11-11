@@ -2,6 +2,7 @@
 
 #include <d2d1.h>
 #include <cmath>
+#include <Uxtheme.h>
 
 #ifdef max
 #undef max
@@ -105,7 +106,15 @@ namespace ChaoticLib{ namespace Direct2D{
 			return left < r.right && right > r.left && top < r.bottom && bottom > r.top;
 		}
 		void Draw(const PaintStruct &ps, const Brush &brush, float width=1.f);
+		void Draw(const PaintStruct &ps, const Brush *brush, float width=1.f)
+		{
+			Draw(ps, *brush, width);
+		}
 		void Fill(const PaintStruct &ps, const Brush &brush);
+		void Fill(const PaintStruct &ps, const Brush *brush)
+		{
+			Fill(ps, *brush);
+		}
 	};
 
 	struct Line{
@@ -123,6 +132,10 @@ namespace ChaoticLib{ namespace Direct2D{
 			return p2;
 		}
 		void Draw(const PaintStruct &ps, const Brush &brush, float width=1.f);
+		void Draw(const PaintStruct &ps, const Brush *brush, float width=1.f)
+		{
+			Draw(ps, *brush, width);
+		}
 	};
 
 	struct Circle{
@@ -141,7 +154,15 @@ namespace ChaoticLib{ namespace Direct2D{
 			return radius;
 		}
 		void Draw(const PaintStruct &ps, const Brush &brush, float width=1.f);
+		void Draw(const PaintStruct &ps, const Brush *brush, float width=1.f)
+		{
+			Draw(ps, *brush, width);
+		}
 		void Fill(const PaintStruct &ps, const Brush &brush);
+		void Fill(const PaintStruct &ps, const Brush *brush)
+		{
+			Fill(ps, *brush);
+		}
 	};
 
 	inline bool Point::IsInside(const Rect &r) const
