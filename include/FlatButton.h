@@ -80,6 +80,8 @@ namespace ChaoticLib{
 
 		virtual void Draw(const typename Traits::PaintStruct &ps) override
 		{
+
+
 			typename Traits::Rect(this->GetPosition(), this->GetSize()).Fill(ps, brush[static_cast<int>(state)]);
 			text.Draw(ps);
 		}

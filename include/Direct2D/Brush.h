@@ -66,4 +66,37 @@ namespace ChaoticLib{ namespace Direct2D{
 			brush.Get());
 	}
 
+	inline void Polygon::Draw(const PaintStruct &ps, const Brush &brush, float width /* =1.f */)
+	{
+		Point p = GetPosition();
+
+		D2D1::Matrix3x2F transform;
+
+		ps.target->GetTransform(&transform);
+		ps.target->SetTransform(transform * D2D1::Matrix3x2F::Translation(p.x, p.y));
+
+		ps.target->DrawGeometry(
+			geometry,
+			brush.Get(),
+			width);
+
+		ps.target->SetTransform(transform);
+	}
+
+	inline void Polygon::Fill(const PaintStruct &ps, const Brush &brush)
+	{
+		Point p = GetPosition();
+
+		D2D1::Matrix3x2F transform;
+
+		ps.target->GetTransform(&transform);
+		ps.target->SetTransform(transform * D2D1::Matrix3x2F::Translation(p.x, p.y));
+
+		ps.target->FillGeometry(
+			geometry,
+			brush.Get());
+
+		ps.target->SetTransform(transform);
+	}
+
 } }

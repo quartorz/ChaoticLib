@@ -227,6 +227,33 @@ namespace ChaoticLib{ namespace Direct2D{
 			delete o;
 		}
 
+		// base‚ðnullptr‚É‚·‚é‚Æˆê”Ô‘O‚É—ˆ‚é
+		void ReorderObject(Object *move, Object *base, bool behind=false)
+		{
+			auto it = std::find(objects.begin(), objects.end(), move);
+			if(it != objects.end()){
+				if(base == nullptr){
+					if(it != objects.begin()){
+						std::copy_backward(objects.begin(), it - 1, it + 1);
+						objects[0] = *it;
+					}
+				} else{
+					auto base_it = std::find(objects.begin(), objects.end(), base);
+					if(base_it == objects.end())
+						return;
+					if(it < base_it){
+						std::rotate(it, it + 1, base_it);
+						if(behind)
+							std::iter_swap(base_it, base_it - 1);
+					} else if(it > base_it){
+						std::rotate(base_it + 1, it, it + 1);
+						if(!behind)
+							std::iter_swap(base_it, base_it + 1);
+					}
+				}
+			}
+		}
+
 		SolidBrush *CreateSolidBrush(const Color &c)
 		{
 			auto br = new SolidBrush(c);

@@ -161,13 +161,13 @@ namespace ChaoticLib{ namespace Win32{
 			return true;
 		}
 
-		template <class... Types>
-		hash_type AddKeyboardHandler(handler_type handler, Types... characters)
+		template <class Type, class... Types>
+		hash_type AddKeyboardHandler(handler_type handler, Type t, Types... characters)
 		{
 			hash_type hash = rand();
 			auto tuple = tuple_type(hash, handler);
 
-			AddHandler(tuple, characters...);
+			AddHandler(tuple, t, characters...);
 
 			return hash;
 		}
@@ -293,11 +293,11 @@ namespace ChaoticLib{ namespace Win32{
 			::KillTimer(static_cast<Derived*>(this)->GetHwnd(), id);
 		}
 
-		template <class... Integers>
-		hash_type AddTimerHandler(handler_type handler, Integers... ids)
+		template <class Integer, class... Integers>
+		hash_type AddTimerHandler(handler_type handler, Integer id, Integers... ids)
 		{
 			hash_type hash = rand();
-			AddHandler(tuple_type(hash, handler), ids...);
+			AddHandler(tuple_type(hash, handler), id, ids...);
 
 			return hash;
 		}

@@ -30,6 +30,7 @@ namespace Aliases{
 	using Rect = Traits::Rect;
 	using Line = Traits::Line;
 	using Circle = Traits::Circle;
+	using Polygon = Traits::Polygon;
 	using SolidBrush = Traits::SolidBrush;
 	using Font = Traits::Font;
 	using Image = Traits::Image;

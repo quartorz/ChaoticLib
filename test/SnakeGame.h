@@ -20,9 +20,19 @@ class Title: public Aliases::Scene<Window>
 	{
 		Title *title;
 
+		Aliases::Polygon pol;
+		Aliases::SolidBrush *brush;
+
 	public:
-		Button(Title *t): title(t)
+		Button(Title *t): title(t), pol({Aliases::Point(), Aliases::Point(22.f, 13.f), Aliases::Point(0.f, 26.f)})
 		{
+			pol.SetPosition(Aliases::Point(10.f, 0.f));
+			pol.Finalize();
+			brush = title->CreateSolidBrush(Aliases::Color(255, 0, 0));
+		}
+		~Button()
+		{
+			title->DeleteResource(brush);
 		}
 
 		void OnPush() override
@@ -34,6 +44,24 @@ class Title: public Aliases::Scene<Window>
 		{
 			Aliases::FlatButton::SetState(s);
 			title->GetWindow()->Repaint();
+		}
+
+		void SetPosition(const Aliases::Point &p) override
+		{
+			this->Aliases::FlatButton::SetPosition(p);
+		}
+
+		bool IsColliding(const Aliases::Point &ap) override
+		{
+			if(ap.IsInside(pol))
+				return false;
+			return this->Aliases::FlatButton::IsColliding(ap);
+		}
+
+		void Draw(const Aliases::PaintStruct &ps) override
+		{
+			this->Aliases::FlatButton::Draw(ps);
+			pol.Fill(ps, brush);
 		}
 	}button;
 
@@ -93,11 +121,68 @@ class Game: public Aliases::Scene<Window>
 		food = {rand() % 80, rand() % 60};
 	}
 
+	void Func(int, unsigned, bool)
+	{
+		::MessageBoxW(nullptr, L"Func", L"Func", MB_OK);
+	}
+
 public:
 	Game(Window *w): Scene(w)
 	{
 		food_brush = this->CreateSolidBrush(Aliases::Color(255, 0, 0));
 		body_brush = this->CreateSolidBrush(Aliases::Color());
+
+		this->AddKeyboardHandler([this](unsigned keycode, bool is_push){
+			if(!turned && is_push){
+				if(keycode == VK_LEFT){
+					TurnLeft();
+					turned = true;
+				}else{
+					TurnRight();
+					turned = true;
+				}
+			}
+		}, VK_LEFT, VK_RIGHT);
+
+		this->AddKeyboardHandler(std::bind(&Game::Func, this, 0, std::placeholders::_1, std::placeholders::_2), L'Q');
+
+		this->AddTimerHandler([this](unsigned){
+			turned = false;
+
+			std::copy_backward(body.begin(), body.end() - 1, body.end());
+
+			auto &head = body[0];
+			switch (direction){
+			case Up:
+				std::get<1>(head)--;
+				break;
+			case Right:
+				std::get<0>(head)++;
+				break;
+			case Down:
+				std::get<1>(head)++;
+				break;
+			case Left:
+				std::get<0>(head)--;
+				break;
+			}
+			if (std::get<0>(head) < 0
+				|| std::get<1>(head) < 0
+				|| std::get<0>(head) >= 80
+				|| std::get<1>(head) >= 60
+				|| std::find(body.begin() + 1, body.end(), body.front()) != body.end())
+			{
+				this->GetWindow()->WindowSystem::Timer<Window>::KillTimer(100);
+				::MessageBoxW(this->GetWindow()->GetHwnd(), (L"記録:" + std::to_wstring(body.size())).c_str(), L"ゲームオーバー", MB_OK);
+				this->GetWindow()->ChangeScene(Window::Scene::Title);
+			}
+			if (head == food){
+				body.push_back(body.back());
+				PutFood();
+			}
+
+			this->GetWindow()->Repaint();
+		}, 100);
 	}
 	~Game()
 	{
@@ -112,58 +197,11 @@ public:
 		body.push_back({40, 30});
 		PutFood();
 
-		this->GetWindow()->WindowSystem::Timer<Window>::SetTimer(100, 100);
+		this->GetWindow()->SetTimer(100, 100);
 	}
-	void OnKeyDown(unsigned keycode) override
+	void Hide() override
 	{
-		if(turned)
-			return;
-
-		switch(keycode){
-		case VK_LEFT:
-			TurnLeft();
-			break;
-		case VK_RIGHT:
-			TurnRight();
-			break;
-		}
-	}
-	void OnTimer(unsigned id) override
-	{
-		if(id == 100){
-			turned = false;
-
-			std::copy_backward(body.begin(), body.end() - 1, body.end());
-
-			auto &head = body[0];
-			switch(direction){
-			case Up:
-				std::get<1>(head)--;
-				break;
-			case Right:
-				std::get<0>(head)++;
-				break;
-			case Down:
-				std::get<1>(head)++;
-				break;
-			case Left:
-				std::get<0>(head)--;
-				break;
-			}
-			if(std::get<0>(head) < 0 || std::get<1>(head) < 0
-				|| std::get<0>(head) >= 80 || std::get<1>(head) >= 60
-				|| std::find(body.begin() + 1, body.end(), body.front()) != body.end()){				
-				this->GetWindow()->WindowSystem::Timer<Window>::KillTimer(100);
-				::MessageBoxW(this->GetWindow()->GetHwnd(), (L"記録:" + std::to_wstring(body.size())).c_str(), L"ゲームオーバー", MB_OK);
-				this->GetWindow()->ChangeScene(Window::Scene::Title);
-			}
-			if(head == food){
-				body.push_back(body.back());
-				PutFood();
-			}
-
-			this->GetWindow()->Repaint();
-		}
+		this->GetWindow()->KillTimer(100);
 	}
 	void Draw(const Aliases::PaintStruct &ps) override
 	{
@@ -219,9 +257,9 @@ public:
 			else
 				std::wcout << L"release";
 			std::wcout << std::endl;
-		}, L'A', std::make_tuple(L'A', L'D'));
+		}, L'A', L'B', std::make_tuple(L'A', L'J'));
 
-		this->DeleteKeyboardHandler(hash, L'A');
+		this->DeleteKeyboardHandler(hash, L'A', std::make_tuple(L'G', L'H'));
 
 		this->SetTimer(200, 1000);
 		auto h = this->AddTimerHandler([](unsigned id){std::wcout << L"id: " << id << std::endl;}, 100, 200);

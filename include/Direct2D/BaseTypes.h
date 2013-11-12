@@ -3,11 +3,18 @@
 #include <d2d1.h>
 #include <cmath>
 #include <Uxtheme.h>
+#include <comdef.h>
+
+#include "..\Macro.h"
+#include "Factory.h"
 
 #ifdef max
 #undef max
 #undef min
 #endif
+
+#include <vector>
+#include <initializer_list>
 
 namespace ChaoticLib{ namespace Direct2D{
 
@@ -52,6 +59,7 @@ namespace ChaoticLib{ namespace Direct2D{
 		}
 	};
 	struct Rect;
+	class Polygon;
 	struct Point: public D2D1_POINT_2F{
 		Point(float x=0.f, float y=0.f):
 			D2D1_POINT_2F(D2D1::Point2F(x, y))
@@ -63,6 +71,7 @@ namespace ChaoticLib{ namespace Direct2D{
 		{
 		}
 		bool IsInside(const Rect &) const;
+		bool IsInside(const Polygon &) const;
 	};
 	inline Point operator+(Point p1, const Point &p2)
 	{
@@ -229,5 +238,100 @@ namespace ChaoticLib{ namespace Direct2D{
 			return Color(r, g, b, a);
 		}
 	};
+
+	class Polygon{
+		Factory factory;
+		ID2D1PathGeometry *geometry;
+		std::vector<Point> points;
+		Point pos;
+
+	public:
+		Polygon(): geometry(nullptr)
+		{
+		}
+
+		Polygon(std::initializer_list<Point> pts): geometry(nullptr), points(pts)
+		{
+		}
+
+		Polygon(const Polygon &p): geometry(nullptr), points(p.points)
+		{
+		}
+
+		~Polygon()
+		{
+			SafeRelease(geometry);
+		}
+
+		void AddPoint(const Point &p)
+		{
+			points.push_back(p);
+		}
+
+		void Finalize()
+		{
+			if(geometry != nullptr)
+				return;
+
+			using namespace _com_util;
+
+			CheckError(factory[D2D]->CreatePathGeometry(&geometry));
+
+			_COM_SMARTPTR_TYPEDEF(ID2D1GeometrySink, __uuidof(ID2D1GeometrySink));
+			ID2D1GeometrySinkPtr sink;
+			CheckError(geometry->Open(&sink));
+			sink->BeginFigure(points[0], D2D1_FIGURE_BEGIN_FILLED);
+			if(points.size() > 1)
+				sink->AddLines(&points[1], points.size() - 1);
+			sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+			CheckError(sink->Close());
+		}
+
+		bool IsFinalized() const
+		{
+			return geometry != nullptr;
+		}
+
+		void SetPosition(const Point &p)
+		{
+			pos = p;
+		}
+		Point GetPosition() const
+		{
+			return pos;
+		}
+
+		void Draw(const PaintStruct &ps, const Brush &brush, float width=1.f);
+		void Draw(const PaintStruct &ps, const Brush *brush, float width=1.f)
+		{
+			Draw(ps, *brush, width);
+		}
+		void Fill(const PaintStruct &ps, const Brush &brush);
+		void Fill(const PaintStruct &ps, const Brush *brush)
+		{
+			Fill(ps, *brush);
+		}
+
+		ID2D1PathGeometry *Get() const
+		{
+			return geometry;
+		}
+	};
+
+	inline bool Point::IsInside(const Polygon &p) const
+	{
+		if(!p.IsFinalized())
+			return false;
+
+		auto g = p.Get();
+		auto pt = p.GetPosition();
+		BOOL contains;
+		_com_util::CheckError(g->FillContainsPoint(
+			*this,
+			D2D1::Matrix3x2F::Translation(pt.x, pt.y),
+			&contains));
+
+		return contains == TRUE;
+	}
 
 } }
