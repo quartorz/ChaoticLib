@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <type_traits>
 
+#include <dinput.h>
+
 namespace ChaoticLib{
 
 	template <class Derived, class Traits>
@@ -17,6 +19,13 @@ namespace ChaoticLib{
 	public:
 		SceneManager(): scene(nullptr), selected(0), created(false)
 		{
+		}
+
+		void InitJoystickHandler()
+		{
+			static_cast<Derived*>(this)->AddJoystickHandler([this](DIJOYSTATE2 &js){
+				this->scene->OnUpdateJoystickState(js);
+			});
 		}
 
 		void AddScene(int key, Scene<Derived, Traits> *scene)

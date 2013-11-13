@@ -38,10 +38,33 @@ namespace ChaoticLib{ namespace Direct2D{
 
 			return cs;
 		}
+		void DrawLine(const PaintStruct &ps, const Brush &brush, Line line);
+		void DrawLine(const PaintStruct &ps, const Brush *brush, const Line &line)
+		{
+			DrawLine(ps, *brush, line);
+		}
 		void DrawRect(const PaintStruct &ps, const Brush &brush, const Rect &rect);
 		void DrawRect(const PaintStruct &ps, const Brush *brush, const Rect &rect)
 		{
 			DrawRect(ps, *brush, rect);
+		}
+		void DrawCircle(const PaintStruct &ps, const Brush &brush, Circle circle);
+		void DrawCircle(const PaintStruct &ps, const Brush *brush, const Circle &circle)
+		{
+			DrawCircle(ps, brush, circle);
+		}
+		void DrawText(const PaintStruct &ps, const Font &font, const Brush &brush, const wchar_t *text, const Rect &rect, bool clip=false);
+		void DrawText(const PaintStruct &ps, const Font *font, const Brush &brush, const wchar_t *text, const Rect &rect, bool clip=false)
+		{
+			DrawText(ps, *font, brush, text, rect, clip);
+		}
+		void DrawText(const PaintStruct &ps, const Font &font, const Brush *brush, const wchar_t *text, const Rect &rect, bool clip=false)
+		{
+			DrawText(ps, font, *brush, text, rect, clip);
+		}
+		void DrawText(const PaintStruct &ps, const Font *font, const Brush *brush, const wchar_t *text, const Rect &rect, bool clip=false)
+		{
+			DrawText(ps, *font, *brush, text, rect, clip);
 		}
 		void Clear(const PaintStruct &ps, const Color &c);
 
@@ -105,10 +128,37 @@ namespace ChaoticLib{ namespace Direct2D{
 	}
 
 	template <class Derived>
+	inline void Painter<Derived>::DrawLine(const PaintStruct &ps, const Brush &brush, Line line)
+	{
+		ps.target->DrawLine(line.GetStartPoint(), line.GetEndPoint(), brush.Get());
+	}
+
+	template <class Derived>
 	inline void Painter<Derived>::DrawRect(const PaintStruct &ps, const Brush &brush, const Rect &rect)
 	{
-		ps.target;
-		::BufferedPaintSetAlpha(ps.hpb, &rect, brush.GetLuminance());
+		ps.target->FillRectangle(
+			rect,
+			brush.Get());
+	}
+
+	template <class Derived>
+	inline void Painter<Derived>::DrawCircle(const PaintStruct &ps, const Brush &brush, Circle circle)
+	{
+		ps.target->DrawEllipse(
+			D2D1::Ellipse(circle.GetCenter(), circle.GetRadius(), circle.GetRadius()),
+			brush.Get());
+	}
+
+	template <class Derived>
+	inline void Painter<Derived>::DrawText(const PaintStruct &ps, const Font &font, const Brush &brush, const wchar_t *text, const Rect &rect, bool clip)
+	{
+		ps.target->DrawTextW(
+			text,
+			std::wcslen(text),
+			font.Get(),
+			rect,
+			brush.Get(),
+			(clip ? D2D1_DRAW_TEXT_OPTIONS_CLIP : D2D1_DRAW_TEXT_OPTIONS_NONE));
 	}
 
 	template <class Derived>
