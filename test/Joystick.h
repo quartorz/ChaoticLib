@@ -3,10 +3,12 @@
 #include "ChaoticLib\Win32\MessageLoop.h"
 #include "Aliases.h"
 #include "ChaoticLib\Win32\Joystick.h"
+#include "ChaoticLib\Win32\Internet.h"
 
 namespace WindowSystem = Aliases::WindowSystem;
 
 #include <cstdio>
+#include <chrono>
 
 template <class Window>
 class Scene: public Aliases::Scene<Window>
@@ -15,6 +17,8 @@ class Scene: public Aliases::Scene<Window>
 
 	Aliases::Font *font;
 	Aliases::SolidBrush *brush;
+
+	WindowSystem::Internet internet;
 
 	DIJOYSTATE2 state = {};
 
@@ -33,6 +37,13 @@ public:
 		this->AddJoystickHandler([this](DIJOYSTATE2 &js){
 			state = js;
 		});
+
+		internet.SetGETHandler([](void *buf, std::size_t len)->bool{
+			::MessageBoxA(nullptr, static_cast<LPCSTR>(buf), "", MB_OK);
+			return false;
+		});
+		internet.SetTimeout(std::chrono::milliseconds(1000));
+		// internet.GET(L"http://www.google.co.jp/");
 	}
 	~Scene()
 	{
