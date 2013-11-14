@@ -44,7 +44,7 @@ public:
 	{
 		wchar_t text[2000];
 
-		std::swprintf(text,
+		std::swprintf(text, 2000,
 			L"Axis X: %ld\n"
 			L"Axis Y: %ld\n"
 			L"Axis Z: %ld\n"
@@ -72,10 +72,10 @@ public:
 
 		for(int i = 0; i < 128; ++i){
 			wchar_t s[10];
-			std::swprintf(s, L"%02X ", state.rgbButtons[i]);
-			std::wcscat(text, s);
+			std::swprintf(s, 10, L"%02X ", state.rgbButtons[i]);
+			::wcscat_s(text, s);
 			if(i % 16 == 15)
-				std::wcscat(text, L"\n");
+				::wcscat_s(text, L"\n");
 		}
 
 		int w;
@@ -109,8 +109,6 @@ public:
 
 	bool Initialize()
 	{
-		this->InitJoystickHandler();
-
 		AddScene(0, &scene);
 		return true;
 	}

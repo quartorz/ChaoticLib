@@ -20,6 +20,9 @@
 #include <vector>
 #include <tuple>
 #include <algorithm>
+#include <type_traits>
+
+#include "Procs.h"
 
 namespace ChaoticLib{ namespace Win32{
 
@@ -34,6 +37,44 @@ namespace ChaoticLib{ namespace Win32{
 		container_type handlers;
 
 		std::mt19937_64 rand{std::time(nullptr)};
+
+		class HasEnabler{
+			template <class T>
+			static decltype(std::declval<T>().EnableJoystickHandler(), std::true_type()) check(T);
+
+			template <class T>
+			static std::false_type check(...);
+
+		public:
+			typedef decltype(check<Derived>(Derived())) type;
+		};
+
+		class HasDisabler{
+			template <class T>
+			static decltype(std::declval<T>().DisableJoystickHandler(), std::true_type()) check(T);
+
+			template <class T>
+			static std::false_type check(...);
+
+		public:
+			typedef decltype(check<Derived>(Derived())) type;
+		};
+
+		void Enable(std::true_type)
+		{
+			static_cast<Derived*>(this)->EnableJoystickHandler();
+		}
+		void Enable(std::false_type)
+		{
+		}
+
+		void Disable(std::true_type)
+		{
+			static_cast<Derived*>(this)->DisableJoystickHandler();
+		}
+		void Disable(std::false_type)
+		{
+		}
 
 	public:
 		Joystick(): device(nullptr)
@@ -120,6 +161,7 @@ namespace ChaoticLib{ namespace Win32{
 				if(msg == WM_CREATE){
 					_com_util::CheckError(device->SetCooperativeLevel(hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
 					::SetTimer(hwnd, ID, Time, nullptr);
+					Enable(HasEnabler::type());
 				}else if(msg == WM_TIMER && wParam == ID){
 					if(FAILED(device->Poll())){
 						while(device->Acquire() == DIERR_INPUTLOST);
@@ -133,6 +175,8 @@ namespace ChaoticLib{ namespace Win32{
 					for(auto &tuple: handlers){
 						std::get<1>(tuple)(js);
 					}
+				}else if(msg == WM_DESTROY){
+					Disable(HasDisabler::type());
 				}
 			}
 

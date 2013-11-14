@@ -4,6 +4,11 @@
 
 #include <unordered_map>
 #include <type_traits>
+#include <cstdint>
+
+#if !defined DIRECTINPUT_VERSION
+#define DIRECTINPUT_VERSION 0x0800
+#endif
 
 #include <dinput.h>
 
@@ -16,16 +21,26 @@ namespace ChaoticLib{
 		int selected;
 		bool created;
 
+		std::int64_t hash = 0;
+
 	public:
 		SceneManager(): scene(nullptr), selected(0), created(false)
 		{
 		}
 
-		void InitJoystickHandler()
+		void EnableJoystickHandler()
 		{
-			static_cast<Derived*>(this)->AddJoystickHandler([this](DIJOYSTATE2 &js){
+			if(hash != 0)
+				return;
+			hash = static_cast<Derived*>(this)->AddJoystickHandler([this](DIJOYSTATE2 &js){
 				this->scene->OnUpdateJoystickState(js);
 			});
+		}
+
+		void DisableJoystickHandler()
+		{
+			static_cast<Derived*>(this)->DeleteJoystickHandler(hash);
+			hash = 0;
 		}
 
 		void AddScene(int key, Scene<Derived, Traits> *scene)
