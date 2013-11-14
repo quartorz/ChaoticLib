@@ -51,13 +51,13 @@ namespace ChaoticLib{ namespace Win32{
 
 		class HasDisabler{
 			template <class T>
-			static decltype(std::declval<T>().DisableJoystickHandler(), std::true_type()) check(T);
+			static decltype(std::declval<T>().DisableJoystickHandler(), std::true_type()) check();
 
 			template <class T>
 			static std::false_type check(...);
 
 		public:
-			typedef decltype(check<Derived>(Derived())) type;
+			typedef decltype(check<Derived>()) type;
 		};
 
 		void Enable(std::true_type)
