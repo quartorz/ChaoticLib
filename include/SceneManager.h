@@ -3,6 +3,7 @@
 #include "Scene.h"
 
 #include <unordered_map>
+#include <vector>
 #include <type_traits>
 #include <cstdint>
 
@@ -26,21 +27,6 @@ namespace ChaoticLib{
 	public:
 		SceneManager(): scene(nullptr), selected(0), created(false)
 		{
-		}
-
-		void EnableJoystickHandler()
-		{
-			if(hash != 0)
-				return;
-			hash = static_cast<Derived*>(this)->AddJoystickHandler([this](DIJOYSTATE2 &js){
-				this->scene->OnUpdateJoystickState(js);
-			});
-		}
-
-		void DisableJoystickHandler()
-		{
-			static_cast<Derived*>(this)->DeleteJoystickHandler(hash);
-			hash = 0;
 		}
 
 		void AddScene(int key, Scene<Derived, Traits> *scene)
@@ -89,6 +75,16 @@ namespace ChaoticLib{
 		void OnTimer(unsigned id)
 		{
 			scene->OnTimer(id);
+		}
+
+		void OnGetJoystickState(GUID &guid, DIJOYSTATE2 &js)
+		{
+			scene->OnGetJoystickState(guid, js);
+		}
+
+		void OnReloadJoystick(const std::vector<GUID> &guids)
+		{
+			scene->OnReloadJoystick(guids);
 		}
 
 		bool CreateResource(const typename Traits::CreateStruct &cs)

@@ -216,7 +216,7 @@ namespace ChaoticLib{ namespace Win32{
 		static LRESULT CALLBACK WindowProc_SetData(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			auto w = reinterpret_cast<Derived*>(::GetWindowLongPtrW(hwnd, 0));
-			if(msg == WM_NCCREATE){
+			if(msg == WM_NCCREATE || msg == WM_CREATE){
 					auto lpcs = reinterpret_cast<LPCREATESTRUCT>(lParam);
 					::SetWindowLongPtrW(hwnd, 0, reinterpret_cast<LONG_PTR>(lpcs->lpCreateParams));
 					::SetWindowLongPtrW(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WindowProc_Static));
@@ -226,8 +226,8 @@ namespace ChaoticLib{ namespace Win32{
 			}
 			if(w == nullptr)
 				return ::DefWindowProcW(hwnd, msg, wParam, lParam);
-				return w->WindowProc(hwnd, msg, wParam, lParam);
-			}
+			return w->WindowProc(hwnd, msg, wParam, lParam);
+		}
 
 		static LRESULT CALLBACK WindowProc_Static(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
@@ -238,7 +238,7 @@ namespace ChaoticLib{ namespace Win32{
 		}
 
 	protected:
-			   HWND hwnd, hparent;
+		HWND hwnd, hparent;
 
 	public:
 		Window() : hwnd(NULL), hparent(hwnd)
@@ -300,12 +300,6 @@ namespace ChaoticLib{ namespace Win32{
 
 		LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
-			if(sizeof...(Procs) > 0){
-				LRESULT lresult = 0l;
-				if (!CallProc<Procs..., ChaoticLib::Nil>(hwnd, msg, wParam, lParam, lresult))
-					return lresult;
-			}
-
 			switch(msg){
 			case WM_CREATE:
 				if(!static_cast<Derived*>(this)->Initialize())
@@ -314,6 +308,12 @@ namespace ChaoticLib{ namespace Win32{
 			case WM_DESTROY:
 				static_cast<Derived*>(this)->Uninitialize();
 				break;
+			}
+
+			if(sizeof...(Procs) > 0){
+				LRESULT lresult = 0l;
+				if(!CallProc<Procs..., ChaoticLib::Nil>(hwnd, msg, wParam, lParam, lresult))
+					return lresult;
 			}
 
 			return ::DefWindowProcW(hwnd, msg, wParam, lParam);

@@ -13,14 +13,10 @@
 #pragma comment(lib, "dxguid")
 
 #include <iostream>
-#include <cstdint>
 #include <functional>
-#include <random>
-#include <ctime>
 #include <vector>
 #include <tuple>
 #include <algorithm>
-#include <type_traits>
 
 #include "Procs.h"
 
@@ -28,156 +24,141 @@ namespace ChaoticLib{ namespace Win32{
 
 	template <class Derived, UINT Time=100, UINT_PTR ID=UINT_PTR_MAX>
 	class Joystick{
-		LPDIRECTINPUTDEVICE8 device;
+		using device_type = std::tuple<GUID, LPDIRECTINPUTDEVICE8>;
+		std::vector<device_type> devices;
 
-		using handler_type = std::function<void(DIJOYSTATE2&)>;
-		using hash_type = std::mt19937_64::result_type;
-		using tuple_type = std::tuple<hash_type, handler_type>;
-		using container_type = std::vector<tuple_type>;
-		container_type handlers;
-
-		std::mt19937_64 rand{std::time(nullptr)};
-
-		class HasEnabler{
-			template <class T>
-			static decltype(std::declval<T>().EnableJoystickHandler(), std::true_type()) check(T);
-
-			template <class T>
-			static std::false_type check(...);
-
-		public:
-			typedef decltype(check<Derived>(Derived())) type;
-		};
-
-		class HasDisabler{
-			template <class T>
-			static decltype(std::declval<T>().DisableJoystickHandler(), std::true_type()) check();
-
-			template <class T>
-			static std::false_type check(...);
-
-		public:
-			typedef decltype(check<Derived>()) type;
-		};
-
-		void Enable(std::true_type)
+		void LoadDevices(HWND hwnd)
 		{
-			static_cast<Derived*>(this)->EnableJoystickHandler();
-		}
-		void Enable(std::false_type)
-		{
-		}
+			if(devices.size() != 0)
+				return;
 
-		void Disable(std::true_type)
-		{
-			static_cast<Derived*>(this)->DisableJoystickHandler();
-		}
-		void Disable(std::false_type)
-		{
-		}
-
-	public:
-		Joystick(): device(nullptr)
-		{
 			using namespace _com_util;
 
 			_COM_SMARTPTR_TYPEDEF(IDirectInput8, IID_IDirectInput8);
 			IDirectInput8Ptr input;
 			CheckError(::DirectInput8Create(::GetModuleHandleW(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, reinterpret_cast<LPVOID*>(&input), nullptr));
 
-			LPVOID context[] ={input, &device};
+			LPVOID context[] ={input, &devices};
 			input->EnumDevices(DI8DEVCLASS_GAMECTRL, [](const DIDEVICEINSTANCE *pdidInstance, VOID *pContext)->BOOL{
-				std::wcout << L"instance name: " << pdidInstance->tszInstanceName << std::endl;
-				std::wcout << L"product name: " << pdidInstance->tszProductName << std::endl << std::endl;
+				std::wcerr << L"instance name: " << pdidInstance->tszInstanceName << std::endl;
+				std::wcerr << L"product name: " << pdidInstance->tszProductName << std::endl << std::endl;
 
 				auto context = static_cast<LPVOID*>(pContext);
 				auto input = static_cast<LPDIRECTINPUT8>(context[0]);
-				auto device = static_cast<LPDIRECTINPUTDEVICE8*>(context[1]);
+				auto devices = static_cast<std::vector<device_type>*>(context[1]);
+				LPDIRECTINPUTDEVICE8 device;
 
 				CheckError(input->CreateDevice(
 					pdidInstance->guidInstance,
-					device,
+					&device,
 					nullptr));
 
-				return DIENUM_STOP;
-			}, context, DIEDFL_ATTACHEDONLY);
-
-			if(device == nullptr)
-				return;
-
-			CheckError(device->SetDataFormat(&c_dfDIJoystick2));
-
-			device->EnumObjects([](LPCDIDEVICEOBJECTINSTANCE pdidoi, LPVOID pvRef)->BOOL{
-				auto device = static_cast<LPDIRECTINPUTDEVICE>(pvRef);
-
-				DIPROPRANGE diprg;
-
-				diprg.diph.dwSize = sizeof(DIPROPRANGE);
-				diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-				diprg.diph.dwHow = DIPH_BYID;
-				diprg.diph.dwObj = pdidoi->dwType;
-				diprg.lMin = -32768;
-				diprg.lMax = 32767;
-
-				if(FAILED(device->SetProperty(DIPROP_RANGE, &diprg.diph)))
-					return DIENUM_STOP;
+				devices->emplace_back(pdidInstance->guidInstance, device);
 
 				return DIENUM_CONTINUE;
-			}, device, DIDFT_AXIS);
+			}, context, DIEDFL_ATTACHEDONLY);
+
+			for(auto &tuple: devices){
+				LPDIRECTINPUTDEVICE8 device = std::get<1>(tuple);
+
+				CheckError(device->SetDataFormat(&c_dfDIJoystick2));
+
+				device->EnumObjects([](LPCDIDEVICEOBJECTINSTANCE pdidoi, LPVOID pvRef)->BOOL{
+					auto device = static_cast<LPDIRECTINPUTDEVICE>(pvRef);
+
+					DIPROPRANGE diprg;
+
+					diprg.diph.dwSize = sizeof(DIPROPRANGE);
+					diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+					diprg.diph.dwHow = DIPH_BYID;
+					diprg.diph.dwObj = pdidoi->dwType;
+					diprg.lMin = -32768;
+					diprg.lMax = 32767;
+
+					if(FAILED(device->SetProperty(DIPROP_RANGE, &diprg.diph)))
+						return DIENUM_STOP;
+
+					return DIENUM_CONTINUE;
+				}, device, DIDFT_AXIS);
+			}
+
+			for(auto &tuple : devices){
+				_com_util::CheckError(std::get<1>(tuple)->SetCooperativeLevel(
+					hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
+			}
+
+			std::vector<GUID> guids(devices.size());
+			std::transform(devices.begin(), devices.end(), guids.begin(), [](device_type &d){return std::get<0>(d);});
+			static_cast<Derived*>(this)->OnReloadJoystick(guids);
+		}
+
+		void ReleaseDevices()
+		{
+			for(auto &tuple: devices){
+				SafeRelease(std::get<1>(tuple));
+			}
+			devices.clear();
+		}
+
+	public:
+		Joystick()
+		{
 		}
 		~Joystick()
 		{
-			SafeRelease(device);
+			ReleaseDevices();
 		}
 
 		bool HasJoystick() const
 		{
-			return device != nullptr;
+			return devices.size() != 0;
 		}
 
-		DIDEVCAPS GetJoystickCapabilities() const
+		DIDEVCAPS GetJoystickCapabilities(GUID &guid) const
 		{
-			DIDEVCAPS diDevCaps;
-			diDevCaps.dwSize = sizeof(DIDEVCAPS);
-			device->GetCapabilities(&diDevCaps);
-			return diDevCaps;
-		}
+			auto it = std::find_if(devices.begin(), devices.end(), [&guid](device_type &d){return std::get<0>(d) == guid;});
+			if(it != devices.end()){
+				DIDEVCAPS diDevCaps;
+				diDevCaps.dwSize = sizeof(DIDEVCAPS);
+				std::get<1>(*it)->GetCapabilities(&diDevCaps);
+				return diDevCaps;
+			}
 
-		hash_type AddJoystickHandler(const std::function<void(DIJOYSTATE2&)> &func)
-		{
-			auto hash = rand();
-			handlers.emplace_back(hash, func);
-			return hash;
-		}
-
-		void DeleteJoystickHandler(hash_type hash)
-		{
-			std::remove_if(handlers.begin(), handlers.end(), [&hash](container_type::value_type &v){return std::get<0>(v) == hash;});
+			throw std::runtime_error("joystick not found");
 		}
 
 		bool WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT &lresult)
 		{
-			if(HasJoystick()){
-				if(msg == WM_CREATE){
-					_com_util::CheckError(device->SetCooperativeLevel(hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
-					::SetTimer(hwnd, ID, Time, nullptr);
-					Enable(HasEnabler::type());
-				}else if(msg == WM_TIMER && wParam == ID){
-					if(FAILED(device->Poll())){
-						while(device->Acquire() == DIERR_INPUTLOST);
-						return true;
-					}
+			switch(msg){
+			case WM_CREATE:
+				LoadDevices(hwnd);
+				::SetTimer(hwnd, ID, Time, nullptr);
+				break;
+			case WM_DESTROY:
+				ReleaseDevices();
+				break;
+			case WM_TIMER:
+				if(wParam == ID){
+					for(auto &tuple: devices){
+						auto device = std::get<1>(tuple);
 
-					DIJOYSTATE2 js;
-					if(FAILED(device->GetDeviceState(sizeof(DIJOYSTATE2), &js)))
-						return true;
+						if(FAILED(device->Poll())){
+							while(device->Acquire() == DIERR_INPUTLOST);
+							return true;
+						}
 
-					for(auto &tuple: handlers){
-						std::get<1>(tuple)(js);
+						DIJOYSTATE2 js;
+						if(FAILED(device->GetDeviceState(sizeof(DIJOYSTATE2), &js)))
+							return true;
+
+						static_cast<Derived*>(this)->OnGetJoystickState(std::get<0>(tuple), js);
 					}
-				}else if(msg == WM_DESTROY){
-					Disable(HasDisabler::type());
 				}
+				break;
+			case WM_DEVICECHANGE:
+				ReleaseDevices();
+				LoadDevices(hwnd);
+				break;
 			}
 
 			return true;

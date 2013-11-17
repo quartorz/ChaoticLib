@@ -36,12 +36,10 @@ namespace ChaoticLib{
 		using timer_map_type = std::unordered_map<timer_id_type, timer_container_type>;
 		timer_map_type timer_map;
 
-		using js_handler_type = std::function<void(DIJOYSTATE2&)>;
-		using js_tuple_type = std::tuple<hash_type, js_handler_type>;
-		using js_container_type = std::vector<js_tuple_type>;
-		js_container_type js_handlers;
-
 		std::mt19937_64 rand{std::time(nullptr)};
+
+	protected:
+		using joystick_id = GUID;
 
 	public:
 		Scene(Window *w): Base(w)
@@ -83,11 +81,11 @@ namespace ChaoticLib{
 				}
 			}
 		}
-		virtual void OnUpdateJoystickState(DIJOYSTATE2 &js)
+		virtual void OnGetJoystickState(joystick_id &id, DIJOYSTATE2 &js)
 		{
-			for(auto &tuple: js_handlers){
-				std::get<1>(tuple)(js);
-			}
+		}
+		virtual void OnReloadJoystick(const std::vector<joystick_id> &ids)
+		{
 		}
 
 		template <class Type, class... Types>
@@ -120,18 +118,6 @@ namespace ChaoticLib{
 		void DeleteTimerHandler(hash_type hash, Integers... ids)
 		{
 			DeleteTimerHandlerHelper(hash, ids...);
-		}
-
-		hash_type AddJoystickHandler(js_handler_type handler)
-		{
-			auto hash = rand();
-			js_handlers.emplace_back(hash, handler);
-			return hash;
-		}
-
-		void DeleteJoystickHandler(hash_type hash)
-		{
-			std::remove_if(js_handlers.begin(), js_handlers.end(), [&hash](container_type::value_type &v){return std::get<0>(v) == hash;});
 		}
 
 	private:
