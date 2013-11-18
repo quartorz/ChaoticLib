@@ -84,7 +84,9 @@ namespace ChaoticLib{
 
 		void OnReloadJoystick(const std::vector<GUID> &guids)
 		{
-			scene->OnReloadJoystick(guids);
+			for(auto &scene: scenes){
+				std::get<1>(scene)->OnReloadJoystick(guids);
+			}
 		}
 
 		bool CreateResource(const typename Traits::CreateStruct &cs)

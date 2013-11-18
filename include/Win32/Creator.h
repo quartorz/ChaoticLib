@@ -19,7 +19,7 @@ namespace ChaoticLib{ namespace Win32{
 		{
 			HWND hwnd = ::CreateWindowExW(
 				exstyle,
-				static_cast<Derived*>(this)->classname,
+				static_cast<Derived*>(this)->GetClassName(),
 				title,
 				style,
 				x,

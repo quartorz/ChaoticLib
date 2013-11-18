@@ -1,5 +1,5 @@
 #include "ChaoticLib\ChaoticLib.h"
-#include "Joystick.h"
+#include "Sample.h"
 
 #include <cstdio>
 

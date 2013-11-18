@@ -266,7 +266,7 @@ namespace ChaoticLib{ namespace Win32{
 
 		static bool Register(void)
 		{
-			return Register(Derived::classname);
+			return Register(Derived::GetClassName());
 		}
 
 		HWND GetHwnd() const
