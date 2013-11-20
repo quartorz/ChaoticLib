@@ -58,6 +58,8 @@ namespace ChaoticLib{ namespace Direct2D{
 
 			auto it = FindObject(ap);
 			if(it != objects.rend()){
+				if(focus != nullptr && focus != *it)
+					focus->OnLoseFocus(hts);
 				focus = *it;
 				focus->OnLeftPress(ap - this->GetPosition(), hts);
 			}

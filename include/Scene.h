@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <ctime>
 #include <random>
+#include <string>
 
 #if !defined DIRECTINPUT_VERSION
 #define DIRECTINPUT_VERSION 0x0800
@@ -81,10 +82,10 @@ namespace ChaoticLib{
 				}
 			}
 		}
-		virtual void OnGetJoystickState(joystick_id &id, DIJOYSTATE2 &js)
+		virtual void OnGetJoystickState(const joystick_id &id, const DIJOYSTATE2 &js)
 		{
 		}
-		virtual void OnReloadJoystick(const std::vector<joystick_id> &ids)
+		virtual void OnReloadJoysticks(const std::vector<std::tuple<joystick_id, std::wstring>> &joysticks)
 		{
 		}
 

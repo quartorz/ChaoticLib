@@ -6,6 +6,8 @@
 #include <vector>
 #include <type_traits>
 #include <cstdint>
+#include <tuple>
+#include <string>
 
 #if !defined DIRECTINPUT_VERSION
 #define DIRECTINPUT_VERSION 0x0800
@@ -77,15 +79,15 @@ namespace ChaoticLib{
 			scene->OnTimer(id);
 		}
 
-		void OnGetJoystickState(GUID &guid, DIJOYSTATE2 &js)
+		void OnGetJoystickState(const GUID &guid, const DIJOYSTATE2 &js)
 		{
 			scene->OnGetJoystickState(guid, js);
 		}
 
-		void OnReloadJoystick(const std::vector<GUID> &guids)
+		void OnReloadJoysticks(const std::vector<std::tuple<GUID, std::wstring>> &joysticks)
 		{
 			for(auto &scene: scenes){
-				std::get<1>(scene)->OnReloadJoystick(guids);
+				std::get<1>(scene)->OnReloadJoysticks(joysticks);
 			}
 		}
 

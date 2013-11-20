@@ -48,6 +48,7 @@ namespace ChaoticLib{ namespace Direct2D{
 
 	void Font::DestroyResource()
 	{
+		modified = true;
 		SafeRelease(format);
 	}
 

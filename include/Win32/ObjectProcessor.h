@@ -128,10 +128,10 @@ namespace ChaoticLib{ namespace Win32{
 
 				static_cast<Derived*>(this)->IterateObjects([&](typename Object &o)-> bool{
 					if(o.IsColliding(Point(x, y))){
-						o.OnLeftPress(Point(x, y), hts);
 						if(focus != nullptr && &o != focus){
 							focus->OnLoseFocus(hts);
 						}
+						o.OnLeftPress(Point(x, y), hts);
 						focus = &o;
 						collide = true;
 						return true;

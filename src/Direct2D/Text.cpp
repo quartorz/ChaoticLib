@@ -281,7 +281,7 @@ void Text::Draw(const PaintStruct &ps)
 IDWriteTextLayout *Text::Get()
 {
 	if(modified){
-		DestroyResource();
+		SafeRelease(layout);
 		Create();
 	}
 

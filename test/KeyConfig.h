@@ -4,20 +4,17 @@
 #include <dinput.h>
 
 #include <memory>
+#include <numeric>
 
 class KeyConfigClass sealed{
 public:
-	enum class Type{
-		Keyboard,
-		Joystick,
-	};
 	enum class Button{
 		Up,
 		Down,
 		Left,
 		Right,
-		Select,
-		Cancel,
+		A,
+		B,
 		Menu,
 	};
 	struct State{
@@ -27,24 +24,51 @@ public:
 private:
 	struct JoystickButton{
 		enum class Tag{
-			Axis,
-			Rot,
-			Slider,
-			POV,
-			Button,
+			None,
+			Axis0_Positive,
+			Axis0_Negative,
+			Axis1_Positive,
+			Axis1_Negative,
+			Axis2_Positive,
+			Axis2_Negative,
+			Rot0_Positive,
+			Rot0_Negative,
+			Rot1_Positive,
+			Rot1_Negative,
+			Rot2_Positive,
+			Rot2_Negative,
+			Slider0_Positive,
+			Slider0_Negative,
+			Slider1_Positive,
+			Slider1_Negative,
+			POV0_Up,
+			POV0_Down,
+			POV0_Left,
+			POV0_Right,
+			POV1_Up,
+			POV1_Down,
+			POV1_Left,
+			POV1_Right,
+			POV2_Up,
+			POV2_Down,
+			POV2_Left,
+			POV2_Right,
+			POV3_Up,
+			POV3_Down,
+			POV3_Left,
+			POV3_Right,
+			Button0,
 		}tag;
-
-		int n;
-		bool positive;
 	};
+	const wchar_t *ToString(JoystickButton::Tag);
+	const wchar_t *ToString(unsigned);
 
 	static std::shared_ptr<KeyConfigClass> instance;
 
-	Type type;
 	GUID js_id;
 	JoystickButton js_config[7];
 	unsigned kb_config[7];
-	State state[2];
+	unsigned char state[7];
 
 	KeyConfigClass() = default;
 
@@ -61,9 +85,11 @@ public:
 	}
 
 	State GetState() const;
-	void SetType(Type);
-	void SetKeyboardConfig(Button, unsigned);
-	void SetJoystickConfig(Button, const GUID &, const DIJOYSTATE2 &);
+	void Reset();
+	const wchar_t *GetKeyboardConfig(Button) const;
+	const wchar_t *GetJoystickConfig(Button) const;
+	const wchar_t *SetKeyboardConfig(Button, unsigned);
+	const wchar_t *SetJoystickConfig(Button, const GUID &, const DIJOYSTATE2 &);
 	void SetKeyboardState(unsigned, bool push);
 	void SetJoystickState(const GUID &, const DIJOYSTATE2 &);
 };

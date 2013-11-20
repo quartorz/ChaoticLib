@@ -17,6 +17,7 @@
 #include <vector>
 #include <tuple>
 #include <algorithm>
+#include <string>
 
 #include "Procs.h"
 
@@ -38,7 +39,9 @@ namespace ChaoticLib{ namespace Win32{
 			IDirectInput8Ptr input;
 			CheckError(::DirectInput8Create(::GetModuleHandleW(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, reinterpret_cast<LPVOID*>(&input), nullptr));
 
-			LPVOID context[] ={input, &devices};
+			std::vector<std::tuple<GUID, std::wstring>> joysticks;
+
+			LPVOID context[] ={input, &devices, &joysticks};
 			input->EnumDevices(DI8DEVCLASS_GAMECTRL, [](const DIDEVICEINSTANCE *pdidInstance, VOID *pContext)->BOOL{
 				std::wcerr << L"instance name: " << pdidInstance->tszInstanceName << std::endl;
 				std::wcerr << L"product name: " << pdidInstance->tszProductName << std::endl << std::endl;
@@ -46,6 +49,7 @@ namespace ChaoticLib{ namespace Win32{
 				auto context = static_cast<LPVOID*>(pContext);
 				auto input = static_cast<LPDIRECTINPUT8>(context[0]);
 				auto devices = static_cast<std::vector<device_type>*>(context[1]);
+				auto joysticks = static_cast<std::vector<std::tuple<GUID, std::wstring>>*>(context[2]);
 				LPDIRECTINPUTDEVICE8 device;
 
 				CheckError(input->CreateDevice(
@@ -54,6 +58,7 @@ namespace ChaoticLib{ namespace Win32{
 					nullptr));
 
 				devices->emplace_back(pdidInstance->guidInstance, device);
+				joysticks->emplace_back(pdidInstance->guidInstance, pdidInstance->tszInstanceName);
 
 				return DIENUM_CONTINUE;
 			}, context, DIEDFL_ATTACHEDONLY);
@@ -87,9 +92,7 @@ namespace ChaoticLib{ namespace Win32{
 					hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
 			}
 
-			std::vector<GUID> guids(devices.size());
-			std::transform(devices.begin(), devices.end(), guids.begin(), [](device_type &d){return std::get<0>(d);});
-			static_cast<Derived*>(this)->OnReloadJoystick(guids);
+			static_cast<Derived*>(this)->OnReloadJoysticks(joysticks);
 		}
 
 		void ReleaseDevices()
