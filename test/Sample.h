@@ -49,6 +49,8 @@ public:
 		this->AddScene(Scene::Title, &title);
 		this->AddScene(Scene::Config, &config);
 
+		SelectScene(Scene::Title);
+
 		return true;
 	}
 

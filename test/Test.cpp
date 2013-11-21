@@ -11,7 +11,7 @@ int Run()
 	::AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW & ~WS_SIZEBOX, FALSE);
 
 	MainWindow w;
-	w.Create(0, WS_OVERLAPPEDWINDOW & ~WS_SIZEBOX, L"Sample", CW_USEDEFAULT, 0, rc.right - rc.left, rc.bottom - rc.top);
+	w.Create(0, WS_OVERLAPPEDWINDOW & ~(WS_SIZEBOX | WS_MAXIMIZEBOX), L"Sample", CW_USEDEFAULT, 0, rc.right - rc.left, rc.bottom - rc.top);
 	w.Show();
 
 //	const int interval = 50;

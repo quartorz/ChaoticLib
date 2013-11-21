@@ -70,22 +70,28 @@ private:
 	unsigned kb_config[7];
 	unsigned char state[7];
 
-	KeyConfigClass() = default;
+	KeyConfigClass();
 
 public:
 	KeyConfigClass(const KeyConfigClass&) = delete;
 	KeyConfigClass &operator=(const KeyConfigClass&) = delete;
 
+	~KeyConfigClass();
+
 	static std::shared_ptr<KeyConfigClass> &GetInstance()
 	{
 		if(!instance){
-			instance = std::make_shared<KeyConfigClass>();
+			instance = std::shared_ptr<KeyConfigClass>(new KeyConfigClass);
 		}
 		return instance;
 	}
 
 	State GetState() const;
 	void Reset();
+	const GUID &GetJoystickID() const
+	{
+		return js_id;
+	}
 	const wchar_t *GetKeyboardConfig(Button) const;
 	const wchar_t *GetJoystickConfig(Button) const;
 	const wchar_t *SetKeyboardConfig(Button, unsigned);

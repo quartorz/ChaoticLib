@@ -1,7 +1,13 @@
 #include "KeyConfig.h"
 #include "StringTable.h"
 
+#include "DataParser.h"
+
 #include <algorithm>
+#include <fstream>
+#include <iomanip>
+
+#pragma comment(lib, "rpcrt4")
 
 namespace{
 	int axis_threshold = 15000;
@@ -9,6 +15,87 @@ namespace{
 }
 
 KeyConfig KeyConfigClass::instance;
+
+KeyConfigClass::KeyConfigClass():
+	js_id()
+{
+	wchar_t path[_MAX_PATH];
+	::GetModuleFileNameW(nullptr, path, _MAX_PATH);
+	::wcscpy_s(::wcsrchr(path, L'\\') + 1, 14, L"keyconfig.dat");
+
+	std::wifstream ifs(path, std::ios_base::in);
+	if(ifs){
+		DataParser<wchar_t> dp;
+		try{
+			dp.parse(ifs);
+		}catch(...){
+			return;
+		}
+
+		auto &data = dp.data();
+		int i = 0;
+		for(auto &key : data.map()[L"keyboard"]->vector()){
+			auto it = std::find(std::begin(::kb_table), std::end(::kb_table), key->string());
+			auto dist = std::distance(std::begin(::kb_table), it);
+			kb_config[i] = dist;
+			i++;
+		}
+		i = 0;
+		for(auto &key : data.map()[L"joystick"]->map()[L"buttons"]->vector()){
+			auto it = std::find(std::begin(::js_table), std::end(::js_table), key->string());
+			auto dist = std::distance(std::begin(::js_table), it);
+			js_config[i].tag = static_cast<JoystickButton::Tag>(dist);
+			i++;
+		}
+		auto &id = data.map()[L"joystick"]->map()[L"id"]->string();
+		::UuidFromStringW(reinterpret_cast<RPC_WSTR>(const_cast<wchar_t*>(id.c_str())), &js_id);
+	}
+}
+
+KeyConfigClass::~KeyConfigClass()
+{
+	wchar_t path[_MAX_PATH];
+	::GetModuleFileNameW(nullptr, path, _MAX_PATH);
+	::wcscpy_s(::wcsrchr(path, L'\\') + 1, 14, L"keyconfig.dat");
+
+	int i = 0;
+
+	std::wofstream ofs(path, std::ios_base::out);
+	ofs << L"{\n"
+		 LR"(  "keyboard": [)"  L"\n";
+	for(auto key: kb_config){
+		ofs << LR"(    ")" << ToString(key) << LR"(")";
+		if(i != 6)
+			ofs << L",";
+		ofs << L"\n";
+		i++;
+	}
+	ofs << L"  ],\n"
+		 LR"(  "joystick": {)" L"\n"
+		 LR"(    "buttons": [)" L"\n";
+	i = 0;
+	for(auto key : js_config){
+		ofs << LR"(      ")" << ToString(key.tag) << LR"(")";
+		if(i != 6)
+			ofs << L",";
+		ofs << L"\n";
+		i++;
+	}
+	ofs << L"    ],\n"
+		 LR"(    "id": ")";
+	ofs << std::hex << std::setw(8) << std::setfill(L'0') << js_id.Data1 << L'-';
+	ofs << std::hex << std::setw(4) << std::setfill(L'0') << js_id.Data2 << L'-';
+	ofs << std::hex << std::setw(4) << std::setfill(L'0') << js_id.Data3 << L'-';
+	ofs << std::hex << std::setw(2) << std::setfill(L'0') << js_id.Data4[0];
+	ofs << std::hex << std::setw(2) << std::setfill(L'0') << js_id.Data4[1] << L'-';
+	ofs << std::hex << std::setw(2) << std::setfill(L'0') << js_id.Data4[2];
+	ofs << std::hex << std::setw(2) << std::setfill(L'0') << js_id.Data4[3];
+	ofs << std::hex << std::setw(2) << std::setfill(L'0') << js_id.Data4[4];
+	ofs << std::hex << std::setw(2) << std::setfill(L'0') << js_id.Data4[5];
+	ofs << std::hex << std::setw(2) << std::setfill(L'0') << js_id.Data4[6];
+	ofs << std::hex << std::setw(2) << std::setfill(L'0') << js_id.Data4[7] << L"\"\n";
+	ofs << L"  }\n}";
+}
 
 const wchar_t *KeyConfigClass::ToString(JoystickButton::Tag tag)
 {
