@@ -66,6 +66,11 @@ class Configurator: public Aliases::Scene<Window>{
 			key.SetSize(Aliases::Size(150, 40));
 			key.SetPosition(Aliases::Point(140, 10));
 		}
+		~KeyAssignment()
+		{
+			this->UnregisterObject(&name);
+			this->UnregisterObject(&key);
+		}
 		void SetName(const wchar_t *n)
 		{
 			name.SetText(n);
@@ -136,7 +141,7 @@ class Configurator: public Aliases::Scene<Window>{
 		assignor = n;
 	}
 
-	KeyConfig config;
+	KeyConfig *config;
 	std::vector<std::tuple<joystick_id, std::wstring>> joysticks;
 
 	Aliases::Text *title, *text[2];
@@ -152,7 +157,7 @@ class Configurator: public Aliases::Scene<Window>{
 	std::wstring js_name;
 
 public:
-	Configurator(Window *w): Base(w), back(this), config(KeyConfigClass::GetInstance())
+	Configurator(Window *w): Base(w), back(this), config(KeyConfig::GetInstance())
 	{
 		title = this->CreateText();
 		text[0] = this->CreateText();
@@ -216,7 +221,7 @@ public:
 
 		this->AddKeyboardHandler([this](unsigned keycode, bool push){
 			if(push && 0 <= assignor && assignor < 7){
-				auto str = config->SetKeyboardConfig(static_cast<KeyConfigClass::Button>(assignor), keycode);
+				auto str = config->SetKeyboardConfig(static_cast<KeyConfig::Button>(assignor), keycode);
 				assignors[assignor].SetKeyAssign(str);
 				assignors[assignor].OnLoseFocus(Aliases::Object::CreateHitTestStruct(this->GetWindow()));
 				assignor = -1;
@@ -228,6 +233,7 @@ public:
 		this->DeleteObject(title);
 		this->DeleteObject(text[0]);
 		this->DeleteObject(text[1]);
+		this->DeleteObject(js_name_text);
 		this->DeleteResource(font);
 		this->DeleteResource(brush);
 		this->UnregisterObject(&back);
@@ -241,9 +247,9 @@ public:
 	{
 		for(unsigned i = 0; i < 14; ++i){
 			if(i < 7)
-				assignors[i].SetKeyAssign(config->GetKeyboardConfig(static_cast<KeyConfigClass::Button>(i)));
+				assignors[i].SetKeyAssign(config->GetKeyboardConfig(static_cast<KeyConfig::Button>(i)));
 			else
-				assignors[i].SetKeyAssign(config->GetJoystickConfig(static_cast<KeyConfigClass::Button>(i - 7)));
+				assignors[i].SetKeyAssign(config->GetJoystickConfig(static_cast<KeyConfig::Button>(i - 7)));
 		}
 
 		config->Reset();
@@ -252,7 +258,7 @@ public:
 	void OnGetJoystickState(const joystick_id &id, const DIJOYSTATE2 &js) override
 	{
 		if(assignor >= 7){
-			auto str = config->SetJoystickConfig(static_cast<KeyConfigClass::Button>(assignor - 7), id, js);
+			auto str = config->SetJoystickConfig(static_cast<KeyConfig::Button>(assignor - 7), id, js);
 			if(std::wcsncmp(str, L"None", 5)){
 				assignors[assignor].SetKeyAssign(str);
 				assignors[assignor].OnLoseFocus(Aliases::Object::CreateHitTestStruct(this->GetWindow()));
@@ -281,7 +287,6 @@ public:
 	void Draw(const Aliases::PaintStruct &ps) override
 	{
 		// deprecated
-		ps.target->Clear(Aliases::Color(255, 255, 255, 210));
 		ps.target->PushAxisAlignedClip(back.GetRect(), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 		ps.target->Clear(Aliases::Color(0, 0, 0, 0));
 		ps.target->PopAxisAlignedClip();

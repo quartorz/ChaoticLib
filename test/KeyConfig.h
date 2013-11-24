@@ -6,7 +6,7 @@
 #include <memory>
 #include <numeric>
 
-class KeyConfigClass sealed{
+class KeyConfig sealed{
 public:
 	enum class Button{
 		Up,
@@ -63,27 +63,27 @@ private:
 	const wchar_t *ToString(JoystickButton::Tag);
 	const wchar_t *ToString(unsigned);
 
-	static std::shared_ptr<KeyConfigClass> instance;
+	static std::unique_ptr<KeyConfig> instance;
 
 	GUID js_id;
 	JoystickButton js_config[7];
 	unsigned kb_config[7];
 	unsigned char state[7];
 
-	KeyConfigClass();
+	KeyConfig();
 
 public:
-	KeyConfigClass(const KeyConfigClass&) = delete;
-	KeyConfigClass &operator=(const KeyConfigClass&) = delete;
+	KeyConfig(const KeyConfig&) = delete;
+	KeyConfig &operator=(const KeyConfig&) = delete;
 
-	~KeyConfigClass();
+	~KeyConfig();
 
-	static std::shared_ptr<KeyConfigClass> &GetInstance()
+	static KeyConfig *GetInstance()
 	{
 		if(!instance){
-			instance = std::shared_ptr<KeyConfigClass>(new KeyConfigClass);
+			instance = std::unique_ptr<KeyConfig>(new KeyConfig);
 		}
-		return instance;
+		return instance.get();
 	}
 
 	State GetState() const;
@@ -99,5 +99,3 @@ public:
 	void SetKeyboardState(unsigned, bool push);
 	void SetJoystickState(const GUID &, const DIJOYSTATE2 &);
 };
-
-using KeyConfig = std::shared_ptr<KeyConfigClass>;

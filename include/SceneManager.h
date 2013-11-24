@@ -36,8 +36,10 @@ namespace ChaoticLib{
 			if(created)
 				scene->CreateResource(static_cast<Derived*>(this)->CreateStruct());
 			scenes.insert({key, scene});
-			if(this->scene == nullptr)
+			if(this->scene == nullptr){
+				selected = key;
 				this->scene = scene;
+			}
 		}
 
 		void SelectScene(int key)

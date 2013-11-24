@@ -37,6 +37,12 @@ namespace ChaoticLib{ namespace Direct2D{
 		{
 		}
 
+		~UserDefinedObject()
+		{
+			std::for_each(resources.begin(), resources.end(), std::mem_fn(&Resource::DestroyResource));
+			std::for_each(objects.begin(), objects.end(), std::mem_fn(&Object::DestroyResource));
+		}
+
 		Window *GetWindow()
 		{
 			return window;

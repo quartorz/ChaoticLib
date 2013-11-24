@@ -30,6 +30,8 @@ int Run()
 	}*/);
 }
 
+GUID DXGI_DEBUG_ALL_X = {0xe48ae283, 0xda80, 0x490b, {0x87, 0xe6, 0x43, 0xe9, 0xa9, 0xcf, 0xda, 0x8}};
+
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
 	if(FAILED(::CoInitialize(NULL)))
@@ -45,6 +47,12 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 	::_wfreopen_s(&fp, L"CONOUT$", L"w", stdout);
 
 	int r = Run();
+
+	{/*
+		ChaoticLib::Direct2D::
+			fac;
+		while(fac[D2D]->Release() > 2);*/
+	}
 
 	::fclose(fp);
 

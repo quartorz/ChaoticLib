@@ -37,11 +37,17 @@ namespace ChaoticLib{ namespace Direct2D{
 			CheckError(::DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(dwfactory), reinterpret_cast<IUnknown**>(&dwfactory)));
 			CheckError(::CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&wicfactory)));
 		}
-		Factory(const Factory &f)
+		Factory(const Factory &)
 		{
-			f.factory->AddRef();
-			f.dwfactory->AddRef();
-			f.wicfactory->AddRef();
+			factory->AddRef();
+			dwfactory->AddRef();
+			wicfactory->AddRef();
+		}
+		Factory(Factory &&)
+		{
+			factory->AddRef();
+			dwfactory->AddRef();
+			wicfactory->AddRef();
 		}
 		~Factory()
 		{

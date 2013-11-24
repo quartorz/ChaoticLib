@@ -9,15 +9,20 @@
 
 #pragma comment(lib, "rpcrt4")
 
+#pragma warning(disable:4351)
+
 namespace{
 	int axis_threshold = 15000;
 
 }
 
-KeyConfig KeyConfigClass::instance;
+std::unique_ptr<KeyConfig> KeyConfig::instance;
 
-KeyConfigClass::KeyConfigClass():
-	js_id()
+KeyConfig::KeyConfig():
+	js_id(),
+	js_config(),
+	kb_config(),
+	state()
 {
 	wchar_t path[_MAX_PATH];
 	::GetModuleFileNameW(nullptr, path, _MAX_PATH);
@@ -25,34 +30,35 @@ KeyConfigClass::KeyConfigClass():
 
 	std::wifstream ifs(path, std::ios_base::in);
 	if(ifs){
-		DataParser<wchar_t> dp;
+		Data<wchar_t> data;
 		try{
-			dp.parse(ifs);
-		}catch(...){
+			data = Data<wchar_t>::parse(ifs);
+		}catch(std::runtime_error &){
 			return;
 		}
+		data.save(std::wofstream("..\\save.txt"), true);
+		data.save(std::wofstream("..\\save2.txt"), false);
 
-		auto &data = dp.data();
 		int i = 0;
-		for(auto &key : data.map()[L"keyboard"]->vector()){
-			auto it = std::find(std::begin(::kb_table), std::end(::kb_table), key->string());
+		for(auto &key : data.map()[L"keyboard"].vector()){
+			auto it = std::find(std::begin(::kb_table), std::end(::kb_table), key.string());
 			auto dist = std::distance(std::begin(::kb_table), it);
 			kb_config[i] = dist;
 			i++;
 		}
 		i = 0;
-		for(auto &key : data.map()[L"joystick"]->map()[L"buttons"]->vector()){
-			auto it = std::find(std::begin(::js_table), std::end(::js_table), key->string());
+		for(auto &key : data.map()[L"joystick"].map()[L"buttons"].vector()){
+			auto it = std::find(std::begin(::js_table), std::end(::js_table), key.string());
 			auto dist = std::distance(std::begin(::js_table), it);
 			js_config[i].tag = static_cast<JoystickButton::Tag>(dist);
 			i++;
 		}
-		auto &id = data.map()[L"joystick"]->map()[L"id"]->string();
+		auto &id = data.map()[L"joystick"].map()[L"id"].string();
 		::UuidFromStringW(reinterpret_cast<RPC_WSTR>(const_cast<wchar_t*>(id.c_str())), &js_id);
 	}
 }
 
-KeyConfigClass::~KeyConfigClass()
+KeyConfig::~KeyConfig()
 {
 	wchar_t path[_MAX_PATH];
 	::GetModuleFileNameW(nullptr, path, _MAX_PATH);
@@ -97,17 +103,17 @@ KeyConfigClass::~KeyConfigClass()
 	ofs << L"  }\n}";
 }
 
-const wchar_t *KeyConfigClass::ToString(JoystickButton::Tag tag)
+const wchar_t *KeyConfig::ToString(JoystickButton::Tag tag)
 {
 	return ::js_table[static_cast<int>(tag)];
 }
 
-const wchar_t *KeyConfigClass::ToString(unsigned keycode)
+const wchar_t *KeyConfig::ToString(unsigned keycode)
 {
 	return ::kb_table[keycode];
 }
 
-KeyConfigClass::State KeyConfigClass::GetState() const
+KeyConfig::State KeyConfig::GetState() const
 {
 	return {
 		state[0] != 0,
@@ -120,28 +126,28 @@ KeyConfigClass::State KeyConfigClass::GetState() const
 	};
 }
 
-void KeyConfigClass::Reset()
+void KeyConfig::Reset()
 {
 	std::fill(std::begin(state), std::end(state), 0);
 }
 
-const wchar_t *KeyConfigClass::GetKeyboardConfig(Button button) const
+const wchar_t *KeyConfig::GetKeyboardConfig(Button button) const
 {
 	return ::kb_table[kb_config[static_cast<int>(button)]];
 }
 
-const wchar_t *KeyConfigClass::GetJoystickConfig(Button button) const
+const wchar_t *KeyConfig::GetJoystickConfig(Button button) const
 {
 	return ::js_table[static_cast<int>(js_config[static_cast<int>(button)].tag)];
 }
 
-const wchar_t *KeyConfigClass::SetKeyboardConfig(Button button, unsigned keycode)
+const wchar_t *KeyConfig::SetKeyboardConfig(Button button, unsigned keycode)
 {
 	kb_config[static_cast<int>(button)] = keycode;
 	return ::kb_table[keycode];
 }
 
-const wchar_t *KeyConfigClass::SetJoystickConfig(Button button, const GUID &id, const DIJOYSTATE2 &js)
+const wchar_t *KeyConfig::SetJoystickConfig(Button button, const GUID &id, const DIJOYSTATE2 &js)
 {
 	js_id = id;
 
@@ -215,11 +221,11 @@ const wchar_t *KeyConfigClass::SetJoystickConfig(Button button, const GUID &id, 
 	return ToString(config.tag);
 }
 
-void KeyConfigClass::SetKeyboardState(unsigned keycode, bool push)
+void KeyConfig::SetKeyboardState(unsigned keycode, bool push)
 {
 }
 
-void KeyConfigClass::SetJoystickState(const GUID &id, const DIJOYSTATE2 &js)
+void KeyConfig::SetJoystickState(const GUID &id, const DIJOYSTATE2 &js)
 {
 	if(js_id != id)
 		return;

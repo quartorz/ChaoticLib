@@ -9,219 +9,328 @@
 #include <iterator>
 #include <algorithm>
 
-template <class Char, bool ThrowIfError = false>
-// Char: charかwchar_t
-// ThrowIfError: trueにすると構文エラーが見つかった時に例外を投げる
-//
-// DataParser<wchar_t, true> dp;
-// dp.parse(L"[\"string1\", {\"key0\": [\"string2\"]}]");
-// MessageBoxW(nullptr, dp.data().vector()[0]->string().c_str(), dp.data().vector()[1]->map()[L"key0"]->vector()[0]->string().c_str(), MB_OK);
-//
-// DataParser<wchar_t> dp2;
-// dp2.parse(std::wifstream(L"text.txt"));
-// MessageBoxW(nullptr, dp2.data().vector()[0]->string().c_str(), dp2.data().vector()[1]->map()[L"key0"]->vector()[0]->string().c_str(), MB_OK);
-class DataParser{
+template <class Char>
+class Data{
 	typedef std::basic_string<Char> string_type;
+	typedef std::unordered_map<string_type, Data> map_type;
+	typedef std::vector<Data> vector_type;
 
-	template <bool Bool = false>
-	class OnError{
-	public:
-		void operator()(...)
-		{
-		}
-	};
-	template <>
-	class OnError<true>{
-	public:
-		void operator()(const char *message)
-		{
-			throw std::runtime_error(message);
-		}
-	};
-	void Error(const char *message)
-	{
-		OnError<ThrowIfError>()(message);
-	}
+	enum Type{
+		None,
+		String,
+		Map,
+		Vector
+	}tag;
 
-public:
-	class Data{
-		friend DataParser<Char, ThrowIfError>;
-
-		typedef std::unordered_map<string_type, Data*> map_type;
-		typedef std::vector<Data*> vector_type;
-
-		enum Type{
-			None,
-			String,
-			Map,
-			Vector
-		}tag;
-
-		union{
-			string_type *pstring;
-			map_type *pmap;
-			vector_type *pvector;
-		};
-
-	public:
-		Data(): tag(None)
-		{
-		}
-		~Data()
-		{
-			switch(tag){
-			case None:
-				return;
-			case String:
-				delete pstring;
-				break;
-			case Map:
-				std::for_each(pmap->begin(), pmap->end(), [](map_type::value_type &p){delete p.second;});
-				delete pmap;
-				break;
-			case Vector:
-				std::for_each(pvector->begin(), pvector->end(), [](Data *p){delete p;});
-				delete pvector;
-				break;
-			default:
-				__assume(0);
-			}
-			tag = None;
-		}
-		string_type string()
-		{
-			assert(tag == String);
-			return *pstring;
-		}
-		const string_type &string() const
-		{
-			return const_cast<Data*>(this)->string();
-		}
-		map_type &map()
-		{
-			assert(tag == Map);
-			return *pmap;
-		}
-		const map_type &map() const
-		{
-			return const_cast<Data*>(this)->map();
-		}
-		vector_type &vector()
-		{
-			assert(tag == Vector);
-			return *pvector;
-		}
-		const vector_type &vector() const
-		{
-			return const_cast<Data*>(this)->vector();
-		}
+	union{
+		string_type *pstring;
+		map_type *pmap;
+		vector_type *pvector;
 	};
 
-	void parse(const string_type &str)
+public:	
+	Data(const Data&) = delete;
+	Data(): tag(None)
 	{
-		parse(data_, str.begin(), str.end());
+	}
+	Data(Data &&d): tag(d.tag)
+	{
+		pstring = d.pstring;
+		d.tag = None;
+		d.pstring = nullptr;
+	}
+	~Data()
+	{
+		clear();
+	}
+	Data &operator=(Data &&d)
+	{
+		tag = d.tag;
+		pstring = d.pstring;
+		d.tag = None;
+		d.pstring = nullptr;
+		return *this;
+	}
+	void clear()
+	{
+		switch(tag){
+		case None:
+			break;
+		case String:
+			delete pstring;
+			break;
+		case Map:
+			delete pmap;
+			break;
+		case Vector:
+			delete pvector;
+			break;
+		default:
+			__assume(0);
+		}
+		tag = None;
+	}
+	string_type string()
+	{
+		assert(tag == String);
+		return *pstring;
+	}
+	const string_type &string() const
+	{
+		return const_cast<Data*>(this)->string();
+	}
+	map_type &map()
+	{
+		assert(tag == Map);
+		return *pmap;
+	}
+	const map_type &map() const
+	{
+		return const_cast<Data*>(this)->map();
+	}
+	vector_type &vector()
+	{
+		assert(tag == Vector);
+		return *pvector;
+	}
+	const vector_type &vector() const
+	{
+		return const_cast<Data*>(this)->vector();
+	}
+	void set_string(const string_type &string)
+	{
+		if(tag != String){
+			clear();
+			tag = String;
+			pstring = new string_type(string);
+		}
+		*pstring = string;
+	}
+	void make_map()
+	{
+		clear();
+		tag = Map;
+		pmap = new map_type;
+	}
+	void make_vector()
+	{
+		clear();
+		tag = Vector;
+		pvector = new vector_type;
 	}
 
-	void parse(std::basic_istream<Char> &is)
+	void clear_tag()
 	{
-		parse(data_, std::istreambuf_iterator<Char>(is.rdbuf()), std::istreambuf_iterator<Char>());
+		tag = None;
 	}
 
-	Data &data()
+	void save(std::basic_ostream<Char> &os, bool beautify = false)
 	{
-		return data_;
+		save(os, *this, beautify, 0u, true);
 	}
-	const Data &data() const
+
+	template <bool Throw = false>
+	static Data parse(const string_type &s)
 	{
-		return const_cast<DataParser*>(this)->data();
+		Data data;
+		DataParser<Throw>().parse(data, str.begin(), str.end());
+		return data;
+	}
+
+	template <bool Throw = false>
+	static Data parse(std::basic_istream<Char> &is)
+	{
+		Data data;
+		DataParser<Throw>().parse(data, std::istreambuf_iterator<Char>(is.rdbuf()), std::istreambuf_iterator<Char>());
+		return data;
 	}
 
 private:
-	Data data_;
+	typedef std::basic_ostream<Char> ostream;
 
-	template <class Iter>
-	void skip_ws(Iter &it)
+	static void print_string(ostream &os, const string_type &s)
 	{
-		while(*it == static_cast<Char>(' ')
+		os << static_cast<Char>('"');
+		for(auto &c: s){
+			switch(c){
+			case static_cast<Char>('"') :
+				os << static_cast<Char>('\\') << static_cast<Char>('"');
+				break;
+			case static_cast<Char>('\n') :
+				os << static_cast<Char>('\\') << static_cast<Char>('n');
+				break;
+			case static_cast<Char>('\\') :
+				os << static_cast<Char>('\\') << static_cast<Char>('\\');
+				break;
+			default:
+				os << c;
+			}
+		}
+		os << static_cast<Char>('"');
+	}
+
+	static void print_indent(ostream &os, unsigned depth)
+	{
+		for(unsigned i = 0; i < depth; ++i)
+			os << static_cast<Char>('\t');
+	}
+
+	static void save(ostream &os, Data &d, bool beautify, unsigned depth, bool indent)
+	{
+		if(!indent && beautify)
+			print_indent(os, depth);
+
+		switch(d.tag){
+		case String:
+			print_string(os, *d.pstring);
+			break;
+		case Map:
+			os << static_cast<Char>('{');
+			if(beautify)
+				os << static_cast<Char>('\n');
+			{
+				map_type::size_type count = 0, size = d.pmap->size();
+				for(auto &p: *d.pmap){
+					if(beautify)
+						print_indent(os, depth + 1);
+					print_string(os, p.first);
+					os << static_cast<Char>(':');
+					if(beautify)
+						os << static_cast<Char>(' ');
+					save(os, p.second, beautify, depth + 1, true);
+					if(count != size - 1)
+						os << static_cast<Char>(',');
+					if(beautify)
+						os << static_cast<Char>('\n');
+					count++;
+				}
+			}
+			if(beautify)
+				print_indent(os, depth);
+			os << static_cast<Char>('}');
+			break;
+		case Vector:
+			os << static_cast<Char>('[');
+			if(beautify)
+				os << static_cast<Char>('\n');
+			{
+				vector_type::size_type count = 0, size = d.pvector->size();
+				for(auto &v: *d.pvector){
+					save(os, v, beautify, beautify + 1, false);
+					if(count != size - 1)
+						os << static_cast<Char>(',');
+					if(beautify)
+						os << static_cast<Char>('\n');
+					count++;
+				}
+			}
+			if(beautify)
+				print_indent(os, depth);
+			os << static_cast<Char>(']');
+			break;
+		default:
+			__assume(0);
+		}
+	}
+
+	template <bool Throw>
+	class DataParser{
+		friend Data<Char>;
+
+		typedef std::basic_string<Char> string_type;
+		typedef Data<Char> data_type;
+
+		template <bool Throw = Throw>
+		void Error(const char *message)
+		{
+			throw std::runtime_error(message);
+		}
+
+		template <>
+		void Error<false>(const char *message)
+		{
+		}
+		template <class Iter>
+		void skip_ws(Iter &it)
+		{
+			while(*it == static_cast<Char>(' ')
 				|| *it == static_cast<Char>('\n')
 				|| *it == static_cast<Char>('\r')
 				|| *it == static_cast<Char>('\t'))
-			it++;
-	}
-
-	template <class Iter>
-	void skip_comment(Iter &it)
-	{
-		while(skip_ws(it), *it == static_cast<Char>('#'))
-			while(*it != static_cast<Char>('\n') && *it != static_cast<Char>('\r'))
-				++it;
-	}
-
-	template <class Iter>
-	string_type parse_string(Iter &begin, Iter end)
-	{
-		if(*begin != static_cast<Char>('"'))
-			Error("invalid token was found when parsing String (excepted '\"')");
-
-		begin++;
-
-		string_type str;
-		auto inserter = std::back_inserter(str);
-
-		while(begin != end){
-			if(*begin == static_cast<Char>('"')){
-				begin++;
-				return str;
-			}else if(*begin == static_cast<Char>('\\')){
-				begin++;
-				if(*begin == static_cast<Char>('n'))
-					*inserter = static_cast<Char>('\n');
-				else
-					*inserter = *begin;
-			}else
-				*inserter = *begin;
-			begin++;
+				it++;
 		}
 
-		Error("reached to the end of input (finding '\"')");
+		template <class Iter>
+		void skip_comment(Iter &it)
+		{
+			while(skip_ws(it), *it == static_cast<Char>('#'))
+			while(*it != static_cast<Char>('\n') && *it != static_cast<Char>('\r'))
+				++it;
+		}
 
-		return string_type();
-	}
+		template <class Iter>
+		string_type parse_string(Iter &begin, Iter end)
+		{
+			if(*begin != static_cast<Char>('"'))
+				Error("invalid token was found when parsing String (excepted '\"')");
 
-	template <class Iter>
-	void parse(Data &data, Iter &begin, Iter end)
-	{
-		skip_ws(begin);
-		skip_comment(begin);
+			begin++;
 
-		switch(*begin){
-		case static_cast<Char>('"'):
-			{
-				data.tag = Data::String;
-				data.pstring = new string_type(parse_string(begin, end));
+			string_type str;
+			auto inserter = std::back_inserter(str);
+
+			while(begin != end){
+				if(*begin == static_cast<Char>('"')){
+					begin++;
+					return str;
+				} else if(*begin == static_cast<Char>('\\')){
+					begin++;
+					if(*begin == static_cast<Char>('n'))
+						*inserter = static_cast<Char>('\n');
+					else
+						*inserter = *begin;
+				} else
+					*inserter = *begin;
+				begin++;
 			}
-			break;
-		case static_cast<Char>('{'):
-			{
-				data.tag = Data::Map;
-				data.pmap = new Data::map_type;
+
+			Error("reached to the end of input (expected '\"')");
+
+			return string_type();
+		}
+
+		template <class Iter>
+		void parse(data_type &data, Iter &begin, Iter end)
+		{
+			skip_ws(begin);
+			skip_comment(begin);
+
+			switch(*begin){
+			case static_cast<Char>('"') :
+				data.set_string(parse_string(begin, end));
+
+				break;
+			case static_cast<Char>('{') :
+				data.make_map();
 
 				begin++;
 				skip_comment(begin);
 
-				string_type str;
-				Data d;
 				if(*begin != static_cast<Char>('}')){
+					string_type str;
+					data_type d;
+
 					for(;;){
 						skip_comment(begin);
 						str = parse_string(begin, end);
 						skip_ws(begin);
 						if(*begin != static_cast<Char>(':'))
-							Error("invalid token in parsing Map (expected ':')");
+							Error("invalid token in Map (expected ':')");
 
 						begin++;
 						parse(d, begin, end);
-						(*data.pmap)[str] = new Data(d);
+						data.map()[str] =  std::move(d);
+						d.clear_tag();
 
 						skip_comment(begin);
 						if(*begin == static_cast<Char>('}'))
@@ -229,29 +338,28 @@ private:
 						else if(*begin == static_cast<Char>(',')){
 							begin++;
 							skip_ws(begin);
-						}else
+						} else
 							Error("invalid token was found when parsing Map (expected '}' or ',')");
 					}
 				}
 				begin++;
-				d.tag = Data::None;
-			}
-			break;
-		case static_cast<Char>('['):
-			{
-				data.tag = Data::Vector;
-				data.pvector = new Data::vector_type;
+
+				break;
+			case static_cast<Char>('[') :
+				data.make_vector();
 
 				begin++;
 				skip_comment(begin);
 
-				Data d;
 				if(*begin != static_cast<Char>(']')){
-					for(;;){
-						parse(d, begin, end);
-						skip_ws(begin);
+					data_type d;
 
-						data.pvector->push_back(new Data(d));
+					for(;;){
+						data.vector().emplace_back();
+
+						parse(data.vector().back(), begin, end);
+						skip_ws(begin);
+						d.clear_tag();
 
 						skip_comment(begin);
 						if(*begin == static_cast<Char>(']'))
@@ -259,16 +367,16 @@ private:
 						else if(*begin == static_cast<Char>(',')){
 							begin++;
 							skip_comment(begin);
-						}else
+						} else
 							Error("invalid token was found when parsing Vector (expected ']' or ',')");
 					}
 				}
 				begin++;
-				d.tag = Data::None;
+
+				break;
+			default:
+				Error("invalid token");
 			}
-			break;
-		default:
-			Error("invalid token");
 		}
-	}
+	};
 };
