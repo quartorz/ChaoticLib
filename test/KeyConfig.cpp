@@ -2,6 +2,7 @@
 #include "StringTable.h"
 
 #include "DataParser.h"
+#include "Function.h"
 
 #include <algorithm>
 #include <fstream>
@@ -24,9 +25,7 @@ KeyConfig::KeyConfig():
 	kb_config(),
 	state()
 {
-	wchar_t path[_MAX_PATH];
-	::GetModuleFileNameW(nullptr, path, _MAX_PATH);
-	::wcscpy_s(::wcsrchr(path, L'\\') + 1, 14, L"keyconfig.dat");
+	auto path = GetDirectory() + L"keyconfig.dat";
 
 	std::wifstream ifs(path, std::ios_base::in);
 	if(ifs){
@@ -36,8 +35,6 @@ KeyConfig::KeyConfig():
 		}catch(std::runtime_error &){
 			return;
 		}
-		data.save(std::wofstream("..\\save.txt"), true);
-		data.save(std::wofstream("..\\save2.txt"), false);
 
 		int i = 0;
 		for(auto &key : data.map()[L"keyboard"].vector()){
@@ -223,6 +220,14 @@ const wchar_t *KeyConfig::SetJoystickConfig(Button button, const GUID &id, const
 
 void KeyConfig::SetKeyboardState(unsigned keycode, bool push)
 {
+	auto it = std::find(std::begin(kb_config), std::end(kb_config), keycode);
+	if(it != std::end(kb_config)){
+		auto dist = std::distance(std::begin(kb_config), it);
+		if(push)
+			state[dist] |= 0x10;
+		else
+			state[dist] &= ~0x10;
+	}
 }
 
 void KeyConfig::SetJoystickState(const GUID &id, const DIJOYSTATE2 &js)

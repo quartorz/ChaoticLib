@@ -18,7 +18,7 @@ public:
 		Menu,
 	};
 	struct State{
-		bool up, down, left, right, select, cancel, menu;
+		bool up, down, left, right, a, b, menu;
 	};
 
 private:

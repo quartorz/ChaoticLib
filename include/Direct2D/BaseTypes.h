@@ -162,6 +162,10 @@ namespace ChaoticLib{ namespace Direct2D{
 		{
 			return radius;
 		}
+		bool IsColliding(const Circle &c)
+		{
+			return (center.x - c.center.x) * (center.x - c.center.x) + (center.y - c.center.y) * (center.y - c.center.y) <= (radius + c.radius) * (radius + c.radius);
+		}
 		void Draw(const PaintStruct &ps, const Brush &brush, float width=1.f);
 		void Draw(const PaintStruct &ps, const Brush *brush, float width=1.f)
 		{

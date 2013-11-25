@@ -7,6 +7,7 @@ namespace WindowSystem = Aliases::WindowSystem;
 
 #include "Title.h"
 #include "Configurator.h"
+#include "Shooting.h"
 
 class MainWindow:
 	public WindowSystem::Window<
@@ -26,16 +27,19 @@ public:
 	enum class Scene: int{
 		Title,
 		Config,
+		Shooting,
 	};
 
 private:
 	Title<MainWindow> title;
 	Configurator<MainWindow> config;
+	Shooting<MainWindow> shooting;
 
 public:
 	MainWindow():
 		title(this),
-		config(this)
+		config(this),
+		shooting(this)
 	{
 	}
 
@@ -48,6 +52,7 @@ public:
 	{
 		this->AddScene(Scene::Title, &title);
 		this->AddScene(Scene::Config, &config);
+		this->AddScene(Scene::Shooting, &shooting);
 
 		SelectScene(Scene::Title);
 

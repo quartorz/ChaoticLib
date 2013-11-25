@@ -25,15 +25,20 @@ class Title: public Aliases::Scene<Window>{
 		}
 	};
 
-	Button button;
+	Button button, button2;
 
 public:
-	Title(Window *w): Base(w), button(this, 1)
+	Title(Window *w): Base(w), button(this, 1), button2(this, 2)
 	{
 		this->RegisterObject(&button);
+		this->RegisterObject(&button2);
 
 		button.SetSize(Aliases::Size(150, 50));
 		button.SetText(L"Key Config");
+
+		button2.SetSize(Aliases::Size(150, 50));
+		button2.SetPosition(Aliases::Point(0, 75));
+		button2.SetText(L"Shooting");
 
 		this->AddTimerHandler([this](unsigned){
 			this->GetWindow()->Repaint();
@@ -42,6 +47,7 @@ public:
 	~Title()
 	{
 		this->UnregisterObject(&button);
+		this->UnregisterObject(&button2);
 	}
 	void Draw(const Aliases::PaintStruct &ps) override
 	{
