@@ -53,9 +53,7 @@ namespace ChaoticLib{ namespace Direct2D{
 		{
 			factory->Release();
 			dwfactory->Release();
-			wchar_t a[20];
-			swprintf(a, L"%d\n",wicfactory->Release());
-			::OutputDebugString(a);
+			wicfactory->Release();
 		}
 		ID2D1Factory *operator[](struct D2D&) const
 		{
