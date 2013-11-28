@@ -175,14 +175,14 @@ public:
 
 		text[0]->SetText(L"Keyboard");
 		text[0]->SetSize(Aliases::Size(400, 70));
-		text[0]->SetPosition(Aliases::Point(0, 70));
+		text[0]->SetPosition(Aliases::Point(0, 55));
 		text[0]->SetAlign(Aliases::Text::Align::Center);
 		text[0]->SetParagraphAlign(Aliases::Text::ParagraphAlign::Center);
 		text[0]->GetFont().SetFontSize(25.f);
 
 		text[1]->SetText(L"Joystick");
 		text[1]->SetSize(Aliases::Size(400, 70));
-		text[1]->SetPosition(Aliases::Point(400, 70));
+		text[1]->SetPosition(Aliases::Point(400, 55));
 		text[1]->SetAlign(Aliases::Text::Align::Center);
 		text[1]->SetParagraphAlign(Aliases::Text::ParagraphAlign::Center);
 		text[1]->GetFont().SetFontSize(25.f);
@@ -205,28 +205,29 @@ public:
 			L"Right",
 			L"A",
 			L"B",
+			L"C",
 			L"Menu",
 		};
-		assignors.reserve(14);
-		for(unsigned i = 0; i < 14; ++i){
-			assignors.emplace_back(this, keynames[i % 7], i);
+		assignors.reserve(16);
+		for(unsigned i = 0; i < 16; ++i){
+			assignors.emplace_back(this, keynames[i % 8], i);
 			this->RegisterObject(&assignors.back());
 			assignors.back().SetSize(Aliases::Size(300, 60));
-			if(i < 7){
-				assignors.back().SetPosition(Aliases::Point(50, 130 + 50.f * i));
+			if(i < 8){
+				assignors.back().SetPosition(Aliases::Point(50, 110 + 50.f * i));
 			}else{
-				assignors.back().SetPosition(Aliases::Point(450, 130 + 50.f * (i % 7)));
+				assignors.back().SetPosition(Aliases::Point(450, 110 + 50.f * (i % 8)));
 			}
 		}
 
 		this->AddKeyboardHandler([this](unsigned keycode, bool push){
-			if(push && 0 <= assignor && assignor < 7){
+			if(push && 0 <= assignor && assignor < 8){
 				auto str = config->SetKeyboardConfig(static_cast<KeyConfig::Button>(assignor), keycode);
 				assignors[assignor].SetKeyAssign(str);
 				assignors[assignor].OnLoseFocus(Aliases::Object::CreateHitTestStruct(this->GetWindow()));
 				assignor = -1;
 			}
-		}, std::tuple<wchar_t, wchar_t>(0, 255));
+		}, keycode_range(0, 255));
 	}
 	~Configurator()
 	{
@@ -245,11 +246,11 @@ public:
 
 	void Show() override
 	{
-		for(unsigned i = 0; i < 14; ++i){
-			if(i < 7)
+		for(unsigned i = 0; i < 16; ++i){
+			if(i < 8)
 				assignors[i].SetKeyAssign(config->GetKeyboardConfig(static_cast<KeyConfig::Button>(i)));
 			else
-				assignors[i].SetKeyAssign(config->GetJoystickConfig(static_cast<KeyConfig::Button>(i - 7)));
+				assignors[i].SetKeyAssign(config->GetJoystickConfig(static_cast<KeyConfig::Button>(i - 8)));
 		}
 
 		config->Reset();
@@ -257,8 +258,8 @@ public:
 
 	void OnGetJoystickState(const joystick_id &id, const DIJOYSTATE2 &js) override
 	{
-		if(assignor >= 7){
-			auto str = config->SetJoystickConfig(static_cast<KeyConfig::Button>(assignor - 7), id, js);
+		if(assignor >= 8){
+			auto str = config->SetJoystickConfig(static_cast<KeyConfig::Button>(assignor - 8), id, js);
 			if(std::wcsncmp(str, L"None", 5)){
 				assignors[assignor].SetKeyAssign(str);
 				assignors[assignor].OnLoseFocus(Aliases::Object::CreateHitTestStruct(this->GetWindow()));

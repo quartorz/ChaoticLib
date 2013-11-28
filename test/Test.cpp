@@ -3,6 +3,16 @@
 
 #include <cstdio>
 
+#if defined _M_IX86
+# pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_IA64
+# pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='ia64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_X64
+# pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#else
+# pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
+
 int Run()
 {
 	MainWindow::Register();
@@ -30,8 +40,6 @@ int Run()
 	}*/);
 }
 
-GUID DXGI_DEBUG_ALL_X = {0xe48ae283, 0xda80, 0x490b, {0x87, 0xe6, 0x43, 0xe9, 0xa9, 0xcf, 0xda, 0x8}};
-
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
 	if(FAILED(::CoInitialize(NULL)))
@@ -47,12 +55,6 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 	::_wfreopen_s(&fp, L"CONOUT$", L"w", stdout);
 
 	int r = Run();
-
-	{/*
-		ChaoticLib::Direct2D::
-			fac;
-		while(fac[D2D]->Release() > 2);*/
-	}
 
 	::fclose(fp);
 

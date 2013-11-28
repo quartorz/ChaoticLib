@@ -24,6 +24,7 @@ namespace ChaoticLib{ namespace Direct2D{
 		typedef Polygon Polygon;
 		typedef Resource Resource;
 		typedef Object Object;
+		typedef Brush Brush;
 		typedef SolidBrush SolidBrush;
 		typedef Font Font;
 		typedef Image Image;

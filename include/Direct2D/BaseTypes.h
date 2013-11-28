@@ -189,7 +189,19 @@ namespace ChaoticLib{ namespace Direct2D{
 	}
 	inline Rect operator+(Point p, Rect r)
 	{
-		return Rect(Point(r.left + p.x, r.top + p.y), Size(r.Width(), r.Height()));
+		return r + p;
+	}
+	inline Rect operator-(Rect r, Point p)
+	{
+		return Rect(Point(r.left - p.x, r.top - p.y), Size(r.Width(), r.Height()));
+	}
+	inline Rect operator+(Rect r, Size s)
+	{
+		return Rect(r.left, r.top, r.right + s.width, r.bottom + s.height);
+	}
+	inline Rect operator+(Size s, Rect r)
+	{
+		return r + s;
 	}
 
 	struct Color: public D2D1::ColorF{

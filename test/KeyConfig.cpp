@@ -31,7 +31,7 @@ KeyConfig::KeyConfig():
 	if(ifs){
 		Data<wchar_t> data;
 		try{
-			data = Data<wchar_t>::parse(ifs);
+			data = Data<wchar_t>::parse<true>(ifs);
 		}catch(std::runtime_error &){
 			return;
 		}
@@ -68,7 +68,7 @@ KeyConfig::~KeyConfig()
 		 LR"(  "keyboard": [)"  L"\n";
 	for(auto key: kb_config){
 		ofs << LR"(    ")" << ToString(key) << LR"(")";
-		if(i != 6)
+		if(i != 7)
 			ofs << L",";
 		ofs << L"\n";
 		i++;
@@ -79,7 +79,7 @@ KeyConfig::~KeyConfig()
 	i = 0;
 	for(auto key : js_config){
 		ofs << LR"(      ")" << ToString(key.tag) << LR"(")";
-		if(i != 6)
+		if(i != 7)
 			ofs << L",";
 		ofs << L"\n";
 		i++;
@@ -120,6 +120,7 @@ KeyConfig::State KeyConfig::GetState() const
 		state[4] != 0,
 		state[5] != 0,
 		state[6] != 0,
+		state[7] != 0,
 	};
 }
 
@@ -211,7 +212,7 @@ const wchar_t *KeyConfig::SetJoystickConfig(Button button, const GUID &id, const
 				}
 			}
 			if(!found){
-				config.tag = JoystickButton::Tag::None;
+				return ToString(JoystickButton::Tag::None);
 			}
 		}
 	}

@@ -14,7 +14,7 @@ class MainWindow:
 		MainWindow,
 		WindowSystem::Resizable<MainWindow>,
 		WindowSystem::Timer<MainWindow>,
-		WindowSystem::Keyboard<MainWindow>,
+		WindowSystem::Keyboard<MainWindow, true>,
 		WindowSystem::Joystick<MainWindow, 16, 100>,
 		WindowSystem::QuitOnClose<MainWindow>,
 		Aliases::ObjectProcessor<MainWindow>,
@@ -33,7 +33,7 @@ public:
 private:
 	Title<MainWindow> title;
 	Configurator<MainWindow> config;
-	Shooting<MainWindow> shooting;
+	Shooting::Scene<MainWindow> shooting;
 
 public:
 	MainWindow():

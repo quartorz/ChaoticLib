@@ -3,6 +3,7 @@
 #include <functional>
 #include <tuple>
 #include <vector>
+#include <array>
 #include <unordered_map>
 #include <algorithm>
 #include <ctime>
@@ -27,7 +28,7 @@ namespace ChaoticLib{
 		using kb_handler_type = std::function<void(unsigned keycode, bool is_push)>;
 		using kb_tuple_type = std::tuple<hash_type, kb_handler_type>;
 		using kb_container_type = std::vector<kb_tuple_type>;
-		using kb_map_type = std::unordered_map<unsigned, kb_container_type>;
+		using kb_map_type = std::array<kb_container_type, 256>;
 		kb_map_type kb_map;
 
 		using timer_handler_type = std::function<void(unsigned id)>;
@@ -41,6 +42,7 @@ namespace ChaoticLib{
 
 	protected:
 		using joystick_id = GUID;
+		using keycode_range = std::tuple<wchar_t, wchar_t>;
 
 	public:
 		Scene(Window *w): Base(w)
@@ -54,22 +56,18 @@ namespace ChaoticLib{
 		}
 		virtual void OnKeyDown(unsigned keycode)
 		{
-			auto it = kb_map.find(keycode);
-			if(it != kb_map.end()){
-				auto &container = it->second;
-				for(auto &tuple: container){
-					std::get<1>(tuple)(keycode, true);
-				}
+			assert(0 <= keycode && keycode <= 255);
+
+			for(auto &tuple : kb_map[keycode]){
+				std::get<1>(tuple)(keycode, true);
 			}
 		}
 		virtual void OnKeyUp(unsigned keycode)
 		{
-			auto it = kb_map.find(keycode);
-			if(it != kb_map.end()){
-				auto &container = it->second;
-				for(auto &tuple: container){
-					std::get<1>(tuple)(keycode, false);
-				}
+			assert(0 <= keycode && keycode <= 255);
+
+			for(auto &tuple: kb_map[keycode]){
+				std::get<1>(tuple)(keycode, false);
 			}
 		}
 		virtual void OnTimer(unsigned id)
@@ -124,6 +122,7 @@ namespace ChaoticLib{
 	private:
 		void AddKeyboardHandlerHelper2(kb_tuple_type &tuple, wchar_t c)
 		{
+			assert(0 <= c && c <= 255);
 			kb_map[c].push_back(tuple);
 		}
 

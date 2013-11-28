@@ -6,6 +6,7 @@
 #include <functional>
 #include <tuple>
 #include <vector>
+#include <array>
 #include <unordered_map>
 #include <algorithm>
 #include <ctime>
@@ -116,45 +117,46 @@ namespace ChaoticLib{ namespace Win32{
 		}
 	};
 
-	template <class Derived>
+	template <class Derived, bool DetectLostFocus=false>
 	class Keyboard
 	{
 		using handler_type = std::function<void(unsigned keycode, bool is_push)>;
 		using hash_type = std::mt19937_64::result_type;
 		using tuple_type = std::tuple<hash_type, handler_type>;
 		using container_type = std::vector<tuple_type>;
-		using map_type = std::unordered_map<unsigned, container_type>;
+		using map_type = std::array<container_type, 256>;
 		map_type map;
 
 		std::mt19937_64 rand{std::time(nullptr)};
+
+	protected:
+		using keycode_range = std::tuple<wchar_t, wchar_t>;
 
 	public:
 		bool WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT &lresult)
 		{
 			switch(msg){
 			case WM_KEYDOWN:
-				{
-					auto it = map.find(static_cast<unsigned>(wParam));
-					if(it != map.end()){
-						auto &container = it->second;
-						for(auto &tuple: container){
-							std::get<1>(tuple)(wParam, true);
-						}
-					}
+				for(auto &tuple: map[static_cast<unsigned>(wParam)]){
+					std::get<1>(tuple)(wParam, true);
 				}
 				static_cast<Derived*>(this)->OnKeyDown(wParam);
 				break;
 			case WM_KEYUP:
-				{
-					auto it = map.find(static_cast<unsigned>(wParam));
-					if(it != map.end()){
-						auto &container = it->second;
-						for(auto &tuple : container){
-							std::get<1>(tuple)(wParam, false);
-						}
-					}
+				for(auto &tuple : map[static_cast<unsigned>(wParam)]){
+					std::get<1>(tuple)(wParam, false);
 				}
 				static_cast<Derived*>(this)->OnKeyUp(wParam);
+				break;
+			case WM_KILLFOCUS:
+				if(DetectLostFocus){
+					for(unsigned i = 0; i < 256; ++i){
+						for(auto &tuple : map[i]){
+							std::get<1>(tuple)(i, false);
+						}
+						static_cast<Derived*>(this)->OnKeyUp(i);
+					}
+				}
 				break;
 			}
 
@@ -181,6 +183,7 @@ namespace ChaoticLib{ namespace Win32{
 	private:
 		void Add(tuple_type &tuple, wchar_t c)
 		{
+			assert(0 <= c && c <= 255);
 			map[c].push_back(tuple);
 		}
 
@@ -196,7 +199,7 @@ namespace ChaoticLib{ namespace Win32{
 		}
 
 		template <class... Others>
-		void AddHandler(tuple_type &tuple, std::tuple<wchar_t, wchar_t> &range, Others... others)
+		void AddHandler(tuple_type &tuple, keycode_range &range, Others... others)
 		{
 			wchar_t start = std::get<0>(range);
 			wchar_t end = std::get<1>(range);

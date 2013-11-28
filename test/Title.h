@@ -55,6 +55,9 @@ public:
 		ps.target->PushAxisAlignedClip(button.GetRect(), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 		ps.target->Clear(Aliases::Color(0, 0, 0, 0));
 		ps.target->PopAxisAlignedClip();
+		ps.target->PushAxisAlignedClip(button2.GetRect(), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+		ps.target->Clear(Aliases::Color(0, 0, 0, 0));
+		ps.target->PopAxisAlignedClip();
 
 		this->Base::Draw(ps);
 	}

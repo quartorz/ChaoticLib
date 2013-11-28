@@ -15,10 +15,11 @@ public:
 		Right,
 		A,
 		B,
+		C,
 		Menu,
 	};
 	struct State{
-		bool up, down, left, right, a, b, menu;
+		bool up, down, left, right, a, b, c, menu;
 	};
 
 private:
@@ -66,9 +67,9 @@ private:
 	static std::unique_ptr<KeyConfig> instance;
 
 	GUID js_id;
-	JoystickButton js_config[7];
-	unsigned kb_config[7];
-	unsigned char state[7];
+	JoystickButton js_config[8];
+	unsigned kb_config[8];
+	unsigned char state[8];
 
 	KeyConfig();
 
