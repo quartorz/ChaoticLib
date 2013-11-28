@@ -277,9 +277,9 @@ namespace Shooting{
 						it->SetVector(Vector(0, -10));
 						it->SetActive();
 
-						auto trans = Transform::Identity();
+						auto trans = Transform::Scale(1.f, 1.01f);
 						if(state.a){
-							trans = Transform::Rotation(ToRad(-0.5));
+							trans = Transform::Rotation(ToRad(-0.5)) * trans;
 						}
 						if(state.c){
 							trans = Transform::Rotation(ToRad(0.5)) * trans;

@@ -72,6 +72,13 @@ public:
 			sin, cos, 0.f
 		);
 	}
+	static Transform Scale(float x, float y)
+	{
+		return Transform(
+			x, 0.f, 0.f,
+			0.f, y, 0.f
+		);
+	}
 };
 
 class Character{
