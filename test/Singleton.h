@@ -24,7 +24,7 @@ public:
 	}
 	static void DeleteInstance()
 	{
-		instance.release();
+		instance.reset();
 	}
 };
 
