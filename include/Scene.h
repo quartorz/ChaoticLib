@@ -9,6 +9,7 @@
 #include <ctime>
 #include <random>
 #include <string>
+#include <cassert>
 
 #if !defined DIRECTINPUT_VERSION
 #define DIRECTINPUT_VERSION 0x0800

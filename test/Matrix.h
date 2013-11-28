@@ -13,7 +13,7 @@ public:
 	{
 	}
 	template <class Element2>
-	Matrix(const std::initializer_list<Element2> &list)
+	Matrix(const std::initializer_list<Element2> &list): mat()
 	{
 		auto it = list.begin();
 
@@ -24,6 +24,10 @@ public:
 				mat[i][j] = static_cast<Element>(*it++)	;
 			}
 		}
+	}
+	template <class Element2, class... Elements>
+	Matrix(Element2 e, Elements... args): Matrix({e, args...})
+	{
 	}
 
 	std::array<Element, Col> &operator[](int i)

@@ -22,37 +22,41 @@ public:
 	Transform()
 	{
 	}
+	template <class Element, class... Elements>
+	Transform(Element e, Elements... args): Transform({e, args...})
+	{
+	}
 	Transform operator*(const Transform &t)
 	{
-		return Transform({
+		return Transform(
 			(*this)[0][0] * t[0][0] + (*this)[0][1] * t[1][0],
 			(*this)[0][0] * t[0][1] + (*this)[0][1] * t[1][1],
 			(*this)[0][0] * t[0][2] + (*this)[0][1] * t[1][2] + (*this)[0][2],
 			(*this)[1][0] * t[0][0] + (*this)[1][1] * t[1][0],
 			(*this)[1][0] * t[0][1] + (*this)[1][1] * t[1][1],
-			(*this)[1][0] * t[0][2] + (*this)[1][1] * t[1][2] + (*this)[1][2],
-		});
+			(*this)[1][0] * t[0][2] + (*this)[1][1] * t[1][2] + (*this)[1][2]
+		);
 	}
 	Vector operator*(const Vector &v)
 	{
-		return Vector({
+		return Vector(
 			(*this)[0][0] * v[0][0] + (*this)[0][1] * v[1][0] + (*this)[0][2],
-			(*this)[1][0] * v[0][0] + (*this)[1][1] * v[1][0] + (*this)[1][2],
-		});
+			(*this)[1][0] * v[0][0] + (*this)[1][1] * v[1][0] + (*this)[1][2]
+		);
 	}
 	static Transform Identity()
 	{
-		return Transform({
+		return Transform(
 			1.f, 0.f, 0.f,
-			0.f, 1.f, 0.f,
-		});
+			0.f, 1.f, 0.f
+		);
 	}
 	static Transform Translation(float x, float y)
 	{
-		return Transform({
+		return Transform(
 			1.f, 0.f, x,
-			0.f, 1.f, y,
-		});
+			0.f, 1.f, y
+		);
 	}
 	static Transform Translation(Aliases::Point p)
 	{
@@ -63,10 +67,10 @@ public:
 	{
 		float cos = std::cos(theta);
 		float sin = std::sin(theta);
-		return Transform({
+		return Transform(
 			cos, -sin, 0.f,
-			sin, cos, 0.f,
-		});
+			sin, cos, 0.f
+		);
 	}
 };
 
