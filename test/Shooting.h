@@ -193,7 +193,7 @@ namespace Shooting{
 		{
 			auto now = std::chrono::system_clock::now();
 
-			auto v = player.GetCenter() - this->GetCenter() + Aliases::Point(10, 10);
+			auto v = player.GetCenter() - this->GetCenter();
 			auto rad = std::atan2(v.y, v.x);
 
 			SetVector(Transform::Rotation(rad) * Vector(3.f, 0.f));
@@ -203,7 +203,7 @@ namespace Shooting{
 				this->time = now;
 				bullets.push_back(new Bullet);
 				auto &b = bullets.back();
-				b->SetPosition(GetCenter() - Aliases::Point(GetRadius(), GetRadius()));
+				b->SetPosition(GetCenter() - Aliases::Point(b->GetRadius(), b->GetRadius()));
 				b->SetVector(Transform::Rotation(rad) * Vector(static_cast<float>(rand() % 4 + 3), 0.f));
 			}
 		}
@@ -275,7 +275,7 @@ namespace Shooting{
 
 				auto now = std::chrono::system_clock::now();
 
-				if(state.b && now -  bullet_time >= std::chrono::milliseconds(208)){
+				if(state.b && now -  bullet_time >= std::chrono::milliseconds(192)){
 					auto it = std::find(bullets.begin(), bullets.end(), false);
 					if(it != bullets.end()){
 						float r = it->GetRadius();
