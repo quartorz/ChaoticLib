@@ -24,20 +24,7 @@ int Run()
 	w.Create(0, WS_OVERLAPPEDWINDOW & ~(WS_SIZEBOX | WS_MAXIMIZEBOX), L"Sample", CW_USEDEFAULT, 0, rc.right - rc.left, rc.bottom - rc.top);
 	w.Show();
 
-//	const int interval = 50;
-
-//	LARGE_INTEGER start, end, freq;
-//	::QueryPerformanceFrequency(&freq);
-//	::QueryPerformanceCounter(&start);
-
-	return ChaoticLib::Win32::MessageLoop(/*[&]{
-		::QueryPerformanceCounter(&end);
-		if((double)(end.QuadPart - start.QuadPart) * 1000 / freq.QuadPart > interval){
-			start = end;
-			::RedrawWindow(w.GetHwnd(), nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
-		}else
-			Sleep(1);
-	}*/);
+	return ChaoticLib::Win32::MessageLoop(ChaoticLib::Win32::FrameController<100, 60>(w));
 }
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)

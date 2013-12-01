@@ -25,8 +25,8 @@ public:
 			}
 		}
 	}
-	template <class Element2, class... Elements>
-	Matrix(Element2 e, Elements... args): Matrix({e, args...})
+	template <class... Elements, class = std::enable_if<sizeof...(Elements) != 0>::type>
+	Matrix(Elements... args): Matrix({std::forward<Elements>(args)...})
 	{
 	}
 

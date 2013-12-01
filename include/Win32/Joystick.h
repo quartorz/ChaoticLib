@@ -23,7 +23,7 @@
 
 namespace ChaoticLib{ namespace Win32{
 
-	template <class Derived, UINT Time=100, UINT_PTR ID=UINT_PTR_MAX>
+	template <class Derived, UINT_PTR ID=UINT_PTR_MAX>
 	class Joystick{
 		using device_type = std::tuple<GUID, LPDIRECTINPUTDEVICE8>;
 		std::vector<device_type> devices;
@@ -135,28 +135,25 @@ namespace ChaoticLib{ namespace Win32{
 			switch(msg){
 			case WM_CREATE:
 				LoadDevices(hwnd);
-				::SetTimer(hwnd, ID, Time, nullptr);
-				break;
-			case WM_DESTROY:
-				ReleaseDevices();
-				break;
-			case WM_TIMER:
-				if(wParam == ID){
-					for(auto &tuple: devices){
+				static_cast<Derived*>(this)->AddTimerHandler([this](unsigned id){
+					for(auto &tuple : devices){
 						auto device = std::get<1>(tuple);
 
 						if(FAILED(device->Poll())){
 							while(device->Acquire() == DIERR_INPUTLOST);
-							return true;
+							return;
 						}
 
 						DIJOYSTATE2 js;
 						if(FAILED(device->GetDeviceState(sizeof(DIJOYSTATE2), &js)))
-							return true;
+							return;
 
 						static_cast<Derived*>(this)->OnGetJoystickState(std::get<0>(tuple), js);
 					}
-				}
+				}, ID);
+				break;
+			case WM_DESTROY:
+				ReleaseDevices();
 				break;
 			case WM_DEVICECHANGE:
 				ReleaseDevices();

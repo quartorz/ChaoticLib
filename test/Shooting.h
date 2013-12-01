@@ -47,6 +47,11 @@ namespace Shooting{
 			player_image.DestroyResource();
 			enemy1_image.DestroyResource();
 		}
+
+		static void DeleteInstance()
+		{
+			instance.reset();
+		}
 	};
 
 	class Bullet: public Character{
@@ -122,7 +127,7 @@ namespace Shooting{
 		int hitpoint;
 		std::chrono::system_clock::time_point time;
 
-		std::mt19937_64 rand{std::time(nullptr)};
+		std::mt19937_64 rand{static_cast<std::mt19937_64::result_type>(std::time(nullptr))};
 
 	public:
 		class Bullet: public ::Shooting::Bullet{
@@ -139,7 +144,7 @@ namespace Shooting{
 			virtual void Move(const Player &) = 0;
 			virtual void Draw(const Aliases::PaintStruct &ps) = 0;
 		};
-		using bullets_type = std::deque<Bullet*>;
+		using bullets_type = std::vector<Bullet*>;
 
 		Enemy(): holder(ResourceHolder::GetInstance())
 		{
@@ -225,12 +230,13 @@ namespace Shooting{
 		bullets_type bullets;
 		std::chrono::system_clock::time_point bullet_time;
 
-		std::deque<Enemy*> enemies;
+		std::vector<Enemy*> enemies;
 		Enemy::bullets_type enemy_bullets;
 		std::chrono::system_clock::time_point enemy_time;
 		std::chrono::milliseconds enemy_duration;
 
 		bool pause = false;
+		int score = 0;
 
 	public:
 		Scene(Window *w): Base(w), config(KeyConfig::GetInstance()), holder(ResourceHolder::GetInstance())
@@ -251,7 +257,7 @@ namespace Shooting{
 
 				auto state = config->GetState();
 				Vector v;
-				float velocity = 5.f;
+				const float velocity = 7.f;
 
 				if(state.up){
 					v[1][0] -= velocity;
@@ -269,7 +275,7 @@ namespace Shooting{
 
 				auto now = std::chrono::system_clock::now();
 
-				if(state.b && now -  bullet_time >= std::chrono::milliseconds(240)){
+				if(state.b && now -  bullet_time >= std::chrono::milliseconds(208)){
 					auto it = std::find(bullets.begin(), bullets.end(), false);
 					if(it != bullets.end()){
 						float r = it->GetRadius();
@@ -310,6 +316,7 @@ namespace Shooting{
 		void Show() override
 		{
 			pause = false;
+			score = 0;
 			player.SetPosition(Aliases::Point(384, 500));
 		}
 		void Hide() override
@@ -336,7 +343,10 @@ namespace Shooting{
 		{
 			pause = true;
 
-			if(::MessageBoxW(this->GetWindow()->GetHwnd(), L"タイトルに戻りますか？", L"ゲームオーバー", MB_YESNO) == IDYES){
+			std::wstring message = L"スコア ";
+			message += std::to_wstring(score);
+			message += L"\nもう一度遊びますか？";
+			if(::MessageBoxW(nullptr, message.c_str(), L"ゲームオーバー", MB_YESNO) == IDNO){
 				this->GetWindow()->SelectScene(Window::Scene::Title);
 			}
 
@@ -367,7 +377,7 @@ namespace Shooting{
 
 			auto rect = this->GetRect();
 
-			for(auto it = enemy_bullets.begin(); it != enemy_bullets.end();){
+			for(auto it = enemy_bullets.begin(); it != enemy_bullets.end(); ++it){
 				(*it)->Move(player);
 				if((*it)->IsColliding(player)){
 					Gameover();
@@ -377,13 +387,12 @@ namespace Shooting{
 				float r = (*it)->GetRadius();
 				if(!(*it)->GetCenter().IsInside(rect - Aliases::Point(r, r) + Aliases::Size(r, r))){
 					delete *it;
-					it =  enemy_bullets.erase(it);
-					continue;
+					*it = nullptr;
 				}
-				it++;
 			}
+			enemy_bullets.erase(std::remove(enemy_bullets.begin(), enemy_bullets.end(), nullptr), enemy_bullets.end());
 
-			for(auto it = enemies.begin(); it != enemies.end();){
+			for(auto it = enemies.begin(); it != enemies.end(); ++it){
 				(*it)->Move(player, enemy_bullets);
 
 				if((*it)->IsColliding(player)){
@@ -391,20 +400,18 @@ namespace Shooting{
 					return;
 				}
 
-				bool erased = false;
 				for(auto &b: bullets){
 					if(b && (*it)->IsColliding(b)){
 						b.SetActive(false);
 						delete *it;
-						it = enemies.erase(it);
-						erased = true;
+						*it = nullptr;
 						break;
 					}
 				}
-				if(erased)
-					continue;
-				++it;
 			}
+			auto remover = std::remove(enemies.begin(), enemies.end(), nullptr);
+			score += std::distance(remover, enemies.end());
+			enemies.erase(remover, enemies.end());
 		}
 		void Draw(const Aliases::PaintStruct &ps) override
 		{

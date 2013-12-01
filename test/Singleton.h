@@ -12,6 +12,7 @@
 
 template <class Derived>
 class Singleton{
+protected:
 	static std::unique_ptr<Derived> instance;
 
 public:
@@ -21,10 +22,6 @@ public:
 			instance = std::unique_ptr<Derived>(new Derived);
 		}
 		return instance.get();
-	}
-	static void DeleteInstance()
-	{
-		instance.reset();
 	}
 };
 

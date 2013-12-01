@@ -8,6 +8,7 @@ namespace WindowSystem = Aliases::WindowSystem;
 #include "Title.h"
 #include "Configurator.h"
 #include "Shooting.h"
+#include "Barrage.h"
 
 class MainWindow:
 	public WindowSystem::Window<
@@ -15,7 +16,7 @@ class MainWindow:
 		WindowSystem::Resizable<MainWindow>,
 		WindowSystem::Timer<MainWindow>,
 		WindowSystem::Keyboard<MainWindow, true>,
-		WindowSystem::Joystick<MainWindow, 16, 100>,
+		WindowSystem::Joystick<MainWindow, 100>,
 		WindowSystem::QuitOnClose<MainWindow>,
 		Aliases::ObjectProcessor<MainWindow>,
 		Aliases::Painter<MainWindow>
@@ -34,12 +35,14 @@ private:
 	Title<MainWindow> title;
 	Configurator<MainWindow> config;
 	Shooting::Scene<MainWindow> shooting;
+	Barrage::Scene<MainWindow> barrage;
 
 public:
 	MainWindow():
 		title(this),
 		config(this),
-		shooting(this)
+		shooting(this),
+		barrage(this)
 	{
 	}
 

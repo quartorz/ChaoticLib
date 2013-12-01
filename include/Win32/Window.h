@@ -18,7 +18,7 @@
 
 #include <tuple>
 
-#include "..\Nil.h"
+#include "..\TMP.h"
 
 namespace ChaoticLib{ namespace Win32{
 
@@ -312,7 +312,7 @@ namespace ChaoticLib{ namespace Win32{
 
 			if(sizeof...(Procs) > 0){
 				LRESULT lresult = 0l;
-				if(!CallProc<Procs..., ChaoticLib::Nil>(hwnd, msg, wParam, lParam, lresult))
+				if(!CallProc<Procs..., ChaoticLib::TMP::Nil>(hwnd, msg, wParam, lParam, lresult))
 					return lresult;
 			}
 
@@ -320,6 +320,7 @@ namespace ChaoticLib{ namespace Win32{
 		}
 
 	private:
+		// FIXME
 		template <class Proc, class... Procs>
 		bool CallProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT &lresult)
 		{
@@ -328,7 +329,7 @@ namespace ChaoticLib{ namespace Win32{
 		}
 
 		template <>
-		bool CallProc<ChaoticLib::Nil>(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT &lresult)
+		bool CallProc<ChaoticLib::TMP::Nil>(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT &lresult)
 		{
 			return true;
 		}

@@ -22,8 +22,8 @@ public:
 	Transform()
 	{
 	}
-	template <class Element, class... Elements>
-	Transform(Element e, Elements... args): Transform({e, args...})
+	template <class... Elements, class = std::enable_if<sizeof...(Elements) != 0>::type>
+	Transform(Elements... args): Transform({args...})
 	{
 	}
 	Transform operator*(const Transform &t)

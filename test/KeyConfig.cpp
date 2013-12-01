@@ -14,7 +14,6 @@
 
 namespace{
 	int axis_threshold = 15000;
-
 }
 
 std::unique_ptr<KeyConfig> KeyConfig::instance;
